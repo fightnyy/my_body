@@ -1404,24 +1404,80 @@ button:disabled {
   color: var(--accent);
 }
 
-/* ── 포커스 모드 (Improvement B+C) ── */
-body.focus-mode .hero,
-body.focus-mode .recommend,
-body.focus-mode .planner,
-body.focus-mode .history {
-  display: none !important;
+/* ── 탭 네비게이션 ── */
+body {
+  padding-bottom: 64px;
 }
 
-body.focus-mode .session {
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  padding: 0.35rem 0 env(safe-area-inset-bottom, 0.2rem);
+}
+
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0;
   border: none;
-  box-shadow: none;
-  background: transparent;
-  max-width: 600px;
-  margin: 0 auto;
+  background: none;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  border-radius: 0;
 }
 
-body.focus-mode .app-shell {
-  margin-top: 1rem;
+.tab-btn:hover:enabled {
+  transform: none;
+  filter: none;
+}
+
+.tab-btn.active {
+  color: var(--brand);
+}
+
+.tab-btn.active svg {
+  stroke: var(--brand);
+}
+
+.tab-btn span {
+  line-height: 1;
+}
+
+.tab-btn.disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* 탭별 섹션 표시/숨김 */
+[data-tab] {
+  display: none;
+}
+
+[data-tab].tab-visible {
+  display: block;
+}
+
+/* 운동 중 세션 탭 강조 */
+.tab-btn.workout-active {
+  color: var(--ok);
+}
+
+.tab-btn.workout-active svg {
+  stroke: var(--ok);
 }
 
 .focus-progress-wrap {

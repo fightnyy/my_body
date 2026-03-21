@@ -655,6 +655,38 @@ renderHistory();
 setupAuth();
 renderOnboarding();
 
+// ── 탭 네비게이션 ──
+let activeTab = "routine";
+const tabBar = document.querySelector("#tab-bar");
+const tabSections = document.querySelectorAll("[data-tab]");
+const tabBtns = document.querySelectorAll(".tab-btn[data-tab]");
+
+function switchTab(tabName) {
+  if (state.active && tabName !== "workout") {
+    if (!window.confirm("운동 중입니다. 탭을 전환하면 운동 화면을 벗어납니다. 계속할까요?")) {
+      return;
+    }
+  }
+  activeTab = tabName;
+  tabSections.forEach((section) => {
+    section.classList.toggle("tab-visible", section.dataset.tab === tabName);
+  });
+  tabBtns.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tab === tabName);
+  });
+}
+
+if (tabBar) {
+  tabBar.addEventListener("click", (e) => {
+    const btn = e.target.closest(".tab-btn[data-tab]");
+    if (!btn) return;
+    switchTab(btn.dataset.tab);
+  });
+}
+
+// 초기 탭 표시
+switchTab("routine");
+
 // ── 운동 유형 토글 핸들러 ──
 const exerciseTypeToggle = document.querySelector("#exercise-type-toggle");
 if (exerciseTypeToggle) {
@@ -1034,7 +1066,7 @@ startSessionBtn.addEventListener("click", () => {
   state.sessionStartedAtMs = Date.now();
 
   // 포커스 모드 진입
-  document.body.classList.add("focus-mode");
+  switchTab("workout");
   // 편집 모드 해제
   editMode = false;
   exerciseList.classList.remove("edit-mode");
@@ -1308,8 +1340,8 @@ function finishSession({ manual }) {
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
 
-  // 포커스 모드 해제
-  document.body.classList.remove("focus-mode");
+  // 운동 종료 → 기록 탭으로 전환
+  switchTab("history");
 
   if (!manual) {
     triggerAlarm(640);
@@ -1332,7 +1364,7 @@ function resetSession({ message = "" } = {}) {
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
-  document.body.classList.remove("focus-mode");
+  switchTab("routine");
 
   if (!state.previewExerciseId) {
     state.previewExerciseId = state.routine[0]?.id || "";
