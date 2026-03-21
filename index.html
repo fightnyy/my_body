@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>xerxise</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-shape shape-a" aria-hidden="true"></div>
+    <div class="bg-shape shape-b" aria-hidden="true"></div>
+    <div id="onboarding-overlay" class="onboarding-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+      <section class="onboarding-card">
+        <div class="onboarding-phase" id="ob-phase-welcome">
+          <h2 id="onboarding-title" class="ob-title">xerxise</h2>
+          <p class="ob-subtitle">운동 기록을 체계적으로 관리하세요</p>
+          <div class="ob-actions">
+            <button id="onboarding-login" class="primary ob-btn" type="button">Google로 시작하기</button>
+            <button id="onboarding-guest" class="secondary ob-btn" type="button">그냥 시작하기</button>
+          </div>
+        </div>
+        <div class="onboarding-phase hidden" id="ob-phase-benefits">
+          <h2 class="ob-title">로그인 완료!</h2>
+          <p class="ob-subtitle">Google 계정으로 기록이 안전하게 보관됩니다.</p>
+          <ul class="ob-benefits">
+            <li>기기/브라우저가 바뀌어도 기록 유지</li>
+            <li>일자별 운동 기록 & 캘린더</li>
+            <li>나에게 맞는 루틴 추천</li>
+          </ul>
+          <button id="ob-benefits-next" class="primary ob-btn" type="button">다음</button>
+        </div>
+        <div class="onboarding-phase hidden" id="ob-phase-choose">
+          <h2 class="ob-title">어떻게 시작할까요?</h2>
+          <div class="ob-choices">
+            <button id="ob-find-workout" class="ob-choice-card" type="button">
+              <span class="ob-choice-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              </span>
+              <span class="ob-choice-label">나에게 맞는 운동 찾기</span>
+              <span class="ob-choice-sub">성별 · 나이 · 경력으로 맞춤 추천</span>
+            </button>
+            <button id="ob-own-routine" class="ob-choice-card" type="button">
+              <span class="ob-choice-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </span>
+              <span class="ob-choice-label">내 루틴으로 시작</span>
+              <span class="ob-choice-sub">이미 운동 루틴이 있어요</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <main class="app-shell">
+      <header class="hero">
+        <div class="auth-bar">
+          <p id="auth-status" class="auth-status">게스트 모드</p>
+          <div class="auth-actions">
+            <button id="google-login" type="button">Google 로그인</button>
+            <button id="logout" type="button" disabled>로그아웃</button>
+          </div>
+        </div>
+        <p id="auth-feedback" class="auth-feedback hidden" aria-live="polite"></p>
+        <p class="eyebrow">Workout Tracker</p>
+        <h1>xerxise</h1>
+        <p class="subtitle">세트 카운트, 시작 타이머, 일자별 운동 기록까지 한 번에 관리합니다.</p>
+      </header>
+
+      <section class="card recommend" aria-label="맞춤 운동 추천">
+        <div class="wiz-top">
+          <h2>나에게 맞는 운동 찾기</h2>
+          <div class="wiz-progress" id="wiz-progress">
+            <div class="wiz-step-dot active" data-step="0"><span>1</span></div>
+            <div class="wiz-step-line"></div>
+            <div class="wiz-step-dot" data-step="1"><span>2</span></div>
+            <div class="wiz-step-line"></div>
+            <div class="wiz-step-dot" data-step="2"><span>3</span></div>
+            <div class="wiz-step-line"></div>
+            <div class="wiz-step-dot" data-step="3"><span>4</span></div>
+          </div>
+        </div>
+
+        <div id="wiz-container" class="wiz-container">
+          <!-- Step 0: 성별 -->
+          <div class="wiz-slide active" data-wiz="0">
+            <p class="wiz-question">성별을 선택하세요</p>
+            <div class="wiz-cards" id="wiz-gender-cards">
+              <button class="wiz-card" type="button" data-value="male">
+                <span class="wiz-card-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="13.5" r="5.5"/><path d="M16 8l4-4m0 0h-4m4 0v4"/></svg>
+                </span>
+                <span class="wiz-card-label">남성</span>
+              </button>
+              <button class="wiz-card" type="button" data-value="female">
+                <span class="wiz-card-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M12 14v7m-3-3h6"/></svg>
+                </span>
+                <span class="wiz-card-label">여성</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 1: 나이 (스크롤 피커) -->
+          <div class="wiz-slide" data-wiz="1">
+            <button class="wiz-back" type="button" id="wiz-back-1" aria-label="이전 단계">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              이전
+            </button>
+            <p class="wiz-question">나이를 선택하세요</p>
+            <div class="age-picker-wrap">
+              <div class="age-picker" id="age-picker">
+                <div class="age-picker-highlight"></div>
+                <div class="age-picker-scroll" id="age-picker-scroll"></div>
+              </div>
+              <div class="age-picker-info" id="age-picker-info">
+                <p class="age-picker-age" id="age-picker-age">25세</p>
+                <p class="age-picker-group" id="age-picker-group">10대~20대</p>
+                <p class="age-picker-desc" id="age-picker-desc">성장기 · 체력 기반 구축</p>
+              </div>
+            </div>
+            <button id="age-picker-confirm" class="primary age-picker-btn" type="button">이 나이로 선택</button>
+          </div>
+
+          <!-- Step 2: 운동 경력 -->
+          <div class="wiz-slide" data-wiz="2">
+            <button class="wiz-back" type="button" id="wiz-back-2" aria-label="이전 단계">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              이전
+            </button>
+            <p class="wiz-question">운동 경력을 선택하세요</p>
+            <div class="wiz-cards wiz-cards-col" id="wiz-level-cards">
+              <button class="wiz-card wide" type="button" data-value="beginner">
+                <span class="wiz-card-label">입문</span>
+                <span class="wiz-card-sub">운동을 처음 시작하거나 6개월 미만</span>
+              </button>
+              <button class="wiz-card wide" type="button" data-value="intermediate">
+                <span class="wiz-card-label">중급</span>
+                <span class="wiz-card-sub">기본 동작에 익숙 · 6개월~2년</span>
+              </button>
+              <button class="wiz-card wide" type="button" data-value="advanced">
+                <span class="wiz-card-label">상급</span>
+                <span class="wiz-card-sub">주기화가 필요한 숙련자 · 2년 이상</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: 운동 시간 -->
+          <div class="wiz-slide" data-wiz="3">
+            <button class="wiz-back" type="button" id="wiz-back-3" aria-label="이전 단계">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              이전
+            </button>
+            <p class="wiz-question">운동 시간은 얼마나 되나요?</p>
+            <div class="wiz-cards wiz-cards-col" id="wiz-time-cards">
+              <button class="wiz-card wide" type="button" data-value="30">
+                <span class="wiz-card-label">30분</span>
+                <span class="wiz-card-sub">핵심 운동만 짧고 강하게</span>
+              </button>
+              <button class="wiz-card wide" type="button" data-value="45">
+                <span class="wiz-card-label">45분</span>
+                <span class="wiz-card-sub">효율적으로 주요 부위 커버</span>
+              </button>
+              <button class="wiz-card wide" type="button" data-value="60">
+                <span class="wiz-card-label">60분</span>
+                <span class="wiz-card-sub">충분한 볼륨으로 균형 있게</span>
+              </button>
+              <button class="wiz-card wide" type="button" data-value="90">
+                <span class="wiz-card-label">90분 이상</span>
+                <span class="wiz-card-sub">보조 운동까지 꼼꼼하게</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 4: 결과 -->
+          <div class="wiz-slide" data-wiz="4">
+            <button class="wiz-back" type="button" id="wiz-back-4" aria-label="처음부터 다시">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              처음부터
+            </button>
+            <div class="wiz-result-head">
+              <p class="wiz-result-badge" id="wiz-result-badge"></p>
+              <h3 id="wiz-result-title"></h3>
+              <p id="wiz-result-summary" class="wiz-result-summary"></p>
+            </div>
+            <div class="recommend-meta">
+              <span class="recommend-chip" id="wiz-result-frequency"></span>
+              <span class="recommend-chip" id="wiz-result-guideline"></span>
+            </div>
+            <div class="recommend-evidence-card">
+              <p class="recommend-evidence-label">근거</p>
+              <p id="wiz-result-evidence" class="recommend-evidence-text"></p>
+              <p id="wiz-result-source" class="recommend-source"></p>
+            </div>
+            <ul id="wiz-result-routine" class="recommend-routine-list"></ul>
+            <button id="wiz-apply" class="accent wiz-apply-btn" type="button">이 루틴으로 시작하기</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card planner" aria-label="운동 루틴 입력">
+        <div class="planner-header">
+          <h2>오늘 할 운동</h2>
+          <button id="toggle-edit-mode" class="secondary edit-toggle-btn" type="button">편집</button>
+        </div>
+        <form id="exercise-form" class="form-row">
+          <input
+            id="exercise-name"
+            type="text"
+            placeholder="예: 벤치프레스"
+            maxlength="40"
+            required
+          />
+          <input
+            id="exercise-sets"
+            type="number"
+            min="1"
+            max="20"
+            placeholder="세트 수"
+            required
+          />
+          <div class="type-toggle" id="exercise-type-toggle">
+            <button type="button" class="type-btn active" data-type="weight">웨이트</button>
+            <button type="button" class="type-btn" data-type="bodyweight">맨몸</button>
+            <button type="button" class="type-btn" data-type="time">시간</button>
+          </div>
+          <button type="submit">추가</button>
+        </form>
+        <div class="preset-row">
+          <button id="load-upper-preset" class="secondary" type="button">상체 기본 루틴 불러오기</button>
+          <button id="load-lower-preset" class="secondary" type="button">하체 기본 루틴 불러오기</button>
+        </div>
+        <div class="user-preset-row">
+          <select id="user-preset-select" aria-label="저장된 내 루틴"></select>
+          <button id="save-user-preset" class="secondary" type="button">내 루틴 저장</button>
+          <button id="load-user-preset" class="secondary" type="button">불러오기</button>
+        </div>
+        <ul id="exercise-list" class="exercise-list"></ul>
+      </section>
+
+      <section class="card session" aria-label="운동 진행">
+        <div class="session-header">
+          <h2>진행 보드</h2>
+          <p id="session-status">루틴을 입력하고 시작하세요.</p>
+        </div>
+
+        <div class="meter-grid">
+          <article class="meter">
+            <p class="label">현재 운동</p>
+            <p id="current-exercise" class="value">-</p>
+          </article>
+          <article class="meter">
+            <p class="label">현재 세트</p>
+            <p id="current-set" class="value">0 / 0</p>
+          </article>
+          <article class="meter danger">
+            <p class="label">세트 시작 타이머</p>
+            <p id="countdown" class="value">-</p>
+          </article>
+        </div>
+
+        <article class="guide-card">
+          <p class="label">운동 설명</p>
+          <p id="exercise-description" class="guide-text">운동을 선택하면 설명이 표시됩니다.</p>
+        </article>
+
+        <div class="button-row">
+          <button id="start-session" class="primary" type="button">운동 시작</button>
+          <div class="set-action-wrap">
+            <input id="weight-input" type="number" min="0" max="999" step="0.5" placeholder="kg" class="weight-input hidden" inputmode="decimal" />
+            <input id="reps-input" type="number" min="1" max="999" placeholder="횟수" class="reps-input hidden" inputmode="numeric" />
+            <input id="time-input" type="number" min="1" max="9999" placeholder="초" class="time-input hidden" inputmode="numeric" />
+            <button id="set-action" class="accent" type="button" disabled>세트 시작</button>
+          </div>
+          <button id="end-session" class="ghost" type="button" disabled>종료</button>
+        </div>
+        <div class="focus-progress-wrap hidden" id="focus-progress-wrap">
+          <div class="focus-progress-track">
+            <div class="focus-progress-bar" id="focus-progress-bar"></div>
+          </div>
+          <p class="focus-progress-text" id="focus-progress-text">0%</p>
+        </div>
+      </section>
+
+      <section class="card history" aria-label="운동 기록">
+        <div class="history-head">
+          <h2>일자별 운동 기록</h2>
+          <p id="history-summary">기록 0건</p>
+        </div>
+        <p id="calendar-scope" class="calendar-scope">캘린더 기준: 게스트</p>
+        <div id="history-list" class="history-list"></div>
+        <div class="calendar-wrap">
+          <div class="calendar-top">
+            <h3>운동 캘린더</h3>
+            <div class="calendar-nav">
+              <button id="calendar-prev" class="secondary" type="button" aria-label="이전 달">이전 달</button>
+              <p id="calendar-month" class="calendar-month">-</p>
+              <button id="calendar-next" class="secondary" type="button" aria-label="다음 달">다음 달</button>
+            </div>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+          </div>
+          <div id="calendar-grid" class="calendar-grid"></div>
+          <div id="calendar-detail" class="calendar-detail">날짜를 선택하면 해당 날짜 운동 기록이 표시됩니다.</div>
+        </div>
+      </section>
+    </main>
+
+    <template id="exercise-item-template">
+      <li class="exercise-item" draggable="true">
+        <span class="drag-handle" aria-label="드래그하여 순서 변경">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+        </span>
+        <div class="item-info">
+          <p class="name"></p>
+          <p class="meta"></p>
+        </div>
+        <div class="item-actions">
+          <button class="edit-btn" type="button" aria-label="세트 수 수정">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="remove-btn" type="button" aria-label="운동 삭제">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </li>
+    </template>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="./firebase-config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
