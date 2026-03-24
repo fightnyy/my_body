@@ -1406,7 +1406,7 @@ button:disabled {
 
 /* ── 탭 네비게이션 ── */
 body {
-  padding-bottom: 64px;
+  padding-bottom: 80px;
 }
 
 .tab-bar {
@@ -1417,27 +1417,32 @@ body {
   z-index: 10;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--line);
-  padding: 0.35rem 0 env(safe-area-inset-bottom, 0.2rem);
+  padding: 0.6rem 0 env(safe-area-inset-bottom, 0.4rem);
 }
 
 .tab-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
-  padding: 0.4rem 0;
+  gap: 0.3rem;
+  padding: 0.55rem 0;
   border: none;
   background: none;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: color 0.15s ease;
   border-radius: 0;
+}
+
+.tab-btn svg {
+  width: 24px;
+  height: 24px;
 }
 
 .tab-btn:hover:enabled {
