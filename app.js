@@ -607,6 +607,9 @@ const calendarDetailEl = document.querySelector("#calendar-detail");
 
 const weightInput = document.querySelector("#weight-input");
 const timeInput = document.querySelector("#time-input");
+const setNoteInput = document.querySelector("#set-note");
+const recentRoutinesEl = document.querySelector("#recent-routines");
+const recentRoutinesListEl = document.querySelector("#recent-routines-list");
 
 // ── 운동 유형 토글 상태 ──
 let selectedExerciseType = "weight";
@@ -652,6 +655,7 @@ renderRoutine();
 renderSession();
 renderHistory();
 updateStreakBar();
+renderRecentRoutines();
 
 setupAuth();
 renderOnboarding();
@@ -1176,21 +1180,35 @@ setActionBtn.addEventListener("click", () => {
         timeInput.focus();
       }
     }
+    // 메모 입력 표시 (이전 메모가 있으면 힌트로 표시)
+    if (setNoteInput) {
+      setNoteInput.classList.remove("hidden");
+      setNoteInput.value = "";
+      if (lastData && lastData.note) {
+        setNoteInput.placeholder = `이전: ${lastData.note}`;
+      } else {
+        setNoteInput.placeholder = "메모 (선택)";
+      }
+    }
     return;
   }
 
   const repsVal = repsInput ? Number(repsInput.value) : 0;
   const weightVal = weightInput ? Number(weightInput.value) : 0;
   const timeVal = timeInput ? Number(timeInput.value) : 0;
+  const noteVal = setNoteInput ? setNoteInput.value.trim() : "";
   if (!exercise.setsDetail) exercise.setsDetail = [];
-  exercise.setsDetail.push({
+  const setEntry = {
     reps: Number.isFinite(repsVal) && repsVal > 0 ? repsVal : 0,
     weight: Number.isFinite(weightVal) && weightVal > 0 ? weightVal : 0,
     time: Number.isFinite(timeVal) && timeVal > 0 ? timeVal : 0,
-  });
+  };
+  if (noteVal) setEntry.note = noteVal;
+  exercise.setsDetail.push(setEntry);
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
+  if (setNoteInput) { setNoteInput.value = ""; setNoteInput.classList.add("hidden"); setNoteInput.placeholder = "메모 (선택)"; }
 
   exercise.completedSets += 1;
   saveRoutine(state.routine);
@@ -1380,18 +1398,26 @@ function finishSession({ manual }) {
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
-
-  // 운동 종료 → 기록 탭으로 전환
-  switchTab("history");
-
-  if (!manual) {
-    triggerAlarm(640);
-  }
+  if (setNoteInput) { setNoteInput.value = ""; setNoteInput.classList.add("hidden"); }
 
   renderRoutine();
   renderSession();
   renderHistory();
   updateStreakBar();
+
+  // 완료 축하 오버레이 (완료 시에만)
+  if (!manual) {
+    showCompletionOverlay({
+      totalSets: totalCompletedSets,
+      durationSec,
+      exerciseCount: completedSnapshot.filter((e) => e.completedSets > 0).length,
+      exercises: completedSnapshot.filter((e) => e.completedSets > 0),
+    });
+    triggerAlarm(640);
+  } else {
+    // 수동 종료 시 바로 기록 탭으로
+    switchTab("history");
+  }
 }
 
 function resetSession({ message = "" } = {}) {
@@ -1407,19 +1433,212 @@ function resetSession({ message = "" } = {}) {
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
+  if (setNoteInput) { setNoteInput.value = ""; setNoteInput.classList.add("hidden"); }
   switchTab("workout");
 
   if (!state.previewExerciseId) {
     state.previewExerciseId = state.routine[0]?.id || "";
   }
+  renderRecentRoutines();
 }
 
 function formatSetDetail(s) {
-  if (s.time) return `${s.time}초`;
+  if (s.time) {
+    const base = `${s.time}초`;
+    return s.note ? `${base} · ${s.note}` : base;
+  }
   const parts = [];
   if (s.weight) parts.push(`${s.weight}kg`);
   parts.push(s.reps ? `${s.reps}회` : "-");
-  return parts.join("×");
+  const base = parts.join("×");
+  return s.note ? `${base} · ${s.note}` : base;
+}
+
+// ── 완료 축하 오버레이 ──
+let _completionDismissTimer = null;
+
+function showCompletionOverlay({ totalSets, durationSec, exerciseCount, exercises }) {
+  const overlay = document.querySelector("#completion-overlay");
+  if (!overlay) return;
+
+  // 통계 필
+  const statsEl = document.querySelector("#completion-stats");
+  if (statsEl) {
+    statsEl.innerHTML = "";
+    const pills = [
+      { value: totalSets, label: "총 세트" },
+      { value: formatDuration(durationSec), label: "운동 시간" },
+      { value: exerciseCount, label: "운동 종목" },
+    ];
+    pills.forEach(({ value, label }) => {
+      const pill = document.createElement("div");
+      pill.className = "stat-pill";
+      pill.innerHTML = `<span class="stat-pill-value">${value}</span><span class="stat-pill-label">${label}</span>`;
+      statsEl.appendChild(pill);
+    });
+  }
+
+  // 이전 세션과 비교
+  const compEl = document.querySelector("#completion-comparison");
+  if (compEl) {
+    compEl.innerHTML = "";
+    const comparisons = [];
+    exercises.forEach((ex) => {
+      const lastSet = getLastSessionData(ex.name);
+      if (!lastSet) return;
+      const curSets = ex.setsDetail || [];
+      if (!curSets.length) return;
+      const curLast = curSets[curSets.length - 1];
+      if (curLast.weight && lastSet.weight && curLast.weight !== lastSet.weight) {
+        const diff = curLast.weight - lastSet.weight;
+        const sign = diff > 0 ? "+" : "";
+        const cls = diff > 0 ? "comp-up" : "comp-down";
+        comparisons.push(`${ex.name}: ${lastSet.weight}kg → ${curLast.weight}kg <span class="${cls}">(${sign}${diff}kg)</span>`);
+      }
+    });
+    if (comparisons.length > 0) {
+      comparisons.forEach((text) => {
+        const item = document.createElement("p");
+        item.className = "comparison-item";
+        item.innerHTML = text;
+        compEl.appendChild(item);
+      });
+    }
+  }
+
+  // 버스트 도트 생성
+  const burstEl = document.querySelector("#burst-dots");
+  if (burstEl) {
+    burstEl.innerHTML = "";
+    const colors = ["#0056d6", "#0a9e6f", "#f4692f", "#ffd886", "#5f9bff", "#7ce4d7"];
+    for (let i = 0; i < 12; i++) {
+      const dot = document.createElement("span");
+      dot.className = "burst-dot";
+      const angle = (i / 12) * 2 * Math.PI;
+      const dist = 120 + Math.random() * 80;
+      const bx = Math.round(Math.cos(angle) * dist);
+      const by = Math.round(Math.sin(angle) * dist);
+      dot.style.setProperty("--bx", `${bx}px`);
+      dot.style.setProperty("--by", `${by}px`);
+      dot.style.backgroundColor = colors[i % colors.length];
+      dot.style.animationDelay = `${0.1 + Math.random() * 0.3}s`;
+      burstEl.appendChild(dot);
+    }
+  }
+
+  overlay.classList.remove("hidden");
+  overlay.classList.add("visible");
+
+  // 버튼 dismiss
+  const dismissBtn = document.querySelector("#completion-dismiss");
+  const onDismiss = () => {
+    hideCompletionOverlay();
+  };
+  if (dismissBtn) {
+    dismissBtn.removeEventListener("click", onDismiss);
+    dismissBtn.addEventListener("click", onDismiss, { once: true });
+  }
+
+  // 3초 자동 dismiss
+  if (_completionDismissTimer) clearTimeout(_completionDismissTimer);
+  _completionDismissTimer = setTimeout(() => {
+    hideCompletionOverlay();
+  }, 3000);
+}
+
+function hideCompletionOverlay() {
+  if (_completionDismissTimer) {
+    clearTimeout(_completionDismissTimer);
+    _completionDismissTimer = null;
+  }
+  const overlay = document.querySelector("#completion-overlay");
+  if (overlay) {
+    overlay.classList.remove("visible");
+    overlay.classList.add("hidden");
+  }
+  switchTab("history");
+}
+
+// ── 최근 루틴 빠른 시작 ──
+function renderRecentRoutines() {
+  if (!recentRoutinesEl || !recentRoutinesListEl) return;
+
+  // 루틴이 있으면 숨김
+  if (state.routine.length > 0) {
+    recentRoutinesEl.classList.add("hidden");
+    return;
+  }
+
+  // 히스토리에서 최근 5개 고유 루틴 추출 (운동 이름 집합으로 중복 제거)
+  const seen = new Set();
+  const uniqueRoutines = [];
+  for (const entry of state.history) {
+    if (!Array.isArray(entry.exercises) || entry.exercises.length === 0) continue;
+    const nameSet = entry.exercises
+      .map((e) => e.name)
+      .sort()
+      .join("|");
+    if (seen.has(nameSet)) continue;
+    seen.add(nameSet);
+    uniqueRoutines.push(entry);
+    if (uniqueRoutines.length >= 5) break;
+  }
+
+  if (uniqueRoutines.length === 0) {
+    recentRoutinesEl.classList.add("hidden");
+    return;
+  }
+
+  recentRoutinesListEl.innerHTML = "";
+  uniqueRoutines.forEach((entry) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "recent-routine-card";
+
+    const dateEl = document.createElement("p");
+    dateEl.className = "card-date";
+    dateEl.textContent = formatDateLabel(entry.dateKey);
+    card.appendChild(dateEl);
+
+    const names = entry.exercises.map((e) => e.name);
+    const exercisesEl = document.createElement("p");
+    exercisesEl.className = "card-exercises";
+    const displayNames = names.length > 3
+      ? names.slice(0, 3).join(", ") + ` 외 ${names.length - 3}개`
+      : names.join(", ");
+    exercisesEl.textContent = displayNames;
+    card.appendChild(exercisesEl);
+
+    const totalSets = entry.exercises.reduce((s, e) => s + (e.targetSets || e.completedSets || 0), 0);
+    const metaEl = document.createElement("p");
+    metaEl.className = "card-meta";
+    const durationText = entry.durationSec ? formatDuration(entry.durationSec) : "";
+    metaEl.textContent = `${totalSets}세트${durationText ? " · " + durationText : ""}`;
+    card.appendChild(metaEl);
+
+    card.addEventListener("click", () => {
+      // 루틴으로 로드
+      const newRoutine = entry.exercises.map((ex) => ({
+        id: createId(),
+        name: ex.name,
+        targetSets: ex.targetSets || ex.completedSets || 3,
+        completedSets: 0,
+        setsDetail: [],
+        exerciseType: ex.exerciseType || "weight",
+        restSeconds: ex.restSeconds || ALERT_SECONDS,
+        description: ex.description || "",
+      }));
+      state.routine = newRoutine;
+      saveRoutine(state.routine);
+      renderRoutine();
+      renderSession();
+      recentRoutinesEl.classList.add("hidden");
+    });
+
+    recentRoutinesListEl.appendChild(card);
+  });
+
+  recentRoutinesEl.classList.remove("hidden");
 }
 
 function renderRoutine() {

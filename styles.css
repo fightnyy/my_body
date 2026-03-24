@@ -1692,3 +1692,274 @@ body.session-active .session-live-badge {
   border-color: var(--brand);
   box-shadow: 0 0 0 3px rgba(0, 86, 214, 0.15);
 }
+
+/* ── Feature 1: Completion Overlay ── */
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes card-scale-in {
+  from { opacity: 0; transform: scale(0.88) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes title-pop {
+  0% { opacity: 0; transform: scale(0.7); }
+  70% { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes check-draw-circle {
+  from { stroke-dashoffset: 226; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes check-draw-path {
+  from { stroke-dashoffset: 60; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes burst-out {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(0.3); }
+}
+
+.completion-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(6, 40, 121, 0.92);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.completion-overlay.hidden {
+  display: none;
+}
+
+.completion-overlay.visible {
+  display: flex;
+  animation: overlay-fade-in 0.3s ease;
+}
+
+.completion-card {
+  position: relative;
+  z-index: 2;
+  background: #fff;
+  border-radius: 24px;
+  padding: 2rem;
+  text-align: center;
+  width: min(380px, 100%);
+  box-shadow: 0 32px 64px rgba(6, 40, 121, 0.35);
+  animation: card-scale-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.completion-check {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.check-circle {
+  stroke-dasharray: 226;
+  stroke-dashoffset: 226;
+  animation: check-draw-circle 0.6s ease forwards 0.1s;
+}
+
+.check-path {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: check-draw-path 0.4s ease forwards 0.65s;
+}
+
+.completion-title {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  opacity: 0;
+  animation: title-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards 0.5s;
+}
+
+.completion-stats {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.stat-pill {
+  background: rgba(0, 86, 214, 0.1);
+  border-radius: 12px;
+  padding: 0.45rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 80px;
+}
+
+.stat-pill-value {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: -0.02em;
+}
+
+.stat-pill-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.completion-comparison {
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.comparison-item {
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding: 0.2rem 0;
+  line-height: 1.4;
+}
+
+.comparison-item .comp-up {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.comparison-item .comp-down {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.comparison-item .comp-same {
+  color: var(--muted);
+}
+
+.burst-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.burst-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+  animation: burst-out 0.8s ease-out forwards;
+}
+
+/* ── Feature 2: Recent Routines ── */
+.recent-routines {
+  margin-bottom: 1rem;
+}
+
+.recent-routines-title {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  font-family: var(--font-body);
+}
+
+.recent-routines-list {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.recent-routines-list::-webkit-scrollbar {
+  height: 4px;
+}
+
+.recent-routines-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.recent-routines-list::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
+.recent-routine-card {
+  min-width: 200px;
+  scroll-snap-align: start;
+  background: var(--bg-1);
+  border-radius: 14px;
+  padding: 0.75rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.recent-routine-card:hover {
+  border-color: rgba(0, 86, 214, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 86, 214, 0.1);
+}
+
+.recent-routine-card:active {
+  border-color: var(--brand);
+}
+
+.recent-routine-card .card-date {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin: 0;
+}
+
+.recent-routine-card .card-exercises {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0.25rem 0 0;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.recent-routine-card .card-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: 0.25rem 0 0;
+}
+
+/* ── Feature 3: Per-set note input ── */
+.set-note-input {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-body);
+}
+
+.set-note-input.hidden {
+  display: none;
+}
+
+/* ── Feature 4: Note display in history ── */
+.set-note-text {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: italic;
+}

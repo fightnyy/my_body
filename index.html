@@ -228,6 +228,10 @@
             <button id="toggle-edit-mode" class="secondary edit-toggle-btn" type="button">편집</button>
           </div>
         </div>
+        <div id="recent-routines" class="recent-routines hidden">
+          <h3 class="recent-routines-title">최근 운동</h3>
+          <div class="recent-routines-list" id="recent-routines-list"></div>
+        </div>
         <div id="planner-setup-area" class="planner-setup-area">
         <form id="exercise-form" class="form-row">
           <input
@@ -306,6 +310,7 @@
             <input id="weight-input" type="number" min="0" max="999" step="0.5" placeholder="kg" class="weight-input hidden" inputmode="decimal" />
             <input id="reps-input" type="number" min="1" max="999" placeholder="횟수" class="reps-input hidden" inputmode="numeric" />
             <input id="time-input" type="number" min="1" max="9999" placeholder="초" class="time-input hidden" inputmode="numeric" />
+            <input id="set-note" type="text" maxlength="50" placeholder="메모 (선택)" class="set-note-input hidden" />
             <button id="set-action" class="accent" type="button" disabled>세트 시작</button>
           </div>
           <button id="end-session" class="ghost" type="button" disabled>종료</button>
@@ -342,6 +347,22 @@
         </div>
       </section>
     </main>
+
+    <div id="completion-overlay" class="completion-overlay hidden">
+      <div class="completion-card">
+        <div class="completion-check">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="36" fill="none" stroke="#0a9e6f" stroke-width="4" class="check-circle"/>
+            <path d="M24 40 L36 52 L56 28" fill="none" stroke="#0a9e6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="check-path"/>
+          </svg>
+        </div>
+        <h2 class="completion-title">완료!</h2>
+        <div class="completion-stats" id="completion-stats"></div>
+        <div class="completion-comparison" id="completion-comparison"></div>
+        <button id="completion-dismiss" class="primary" type="button">기록 보기</button>
+      </div>
+      <div class="burst-dots" id="burst-dots"></div>
+    </div>
 
     <template id="exercise-item-template">
       <li class="exercise-item" draggable="true">
