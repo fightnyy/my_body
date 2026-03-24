@@ -687,6 +687,19 @@ if (tabBar) {
 // 초기 탭 표시
 switchTab("routine");
 
+// ── 루틴 탭 "시작하기" 버튼 ──
+const startFromRoutineBtn = document.querySelector("#start-from-routine");
+if (startFromRoutineBtn) {
+  startFromRoutineBtn.addEventListener("click", () => {
+    if (state.routine.length === 0) {
+      alert("운동을 먼저 추가하세요.");
+      return;
+    }
+    switchTab("workout");
+    startSessionBtn.click();
+  });
+}
+
 // ── 운동 유형 토글 핸들러 ──
 const exerciseTypeToggle = document.querySelector("#exercise-type-toggle");
 if (exerciseTypeToggle) {

@@ -1462,6 +1462,16 @@ body {
   pointer-events: none;
 }
 
+/* 루틴 탭 시작하기 버튼 */
+.start-from-routine-btn {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 /* 탭별 섹션 표시/숨김 (섹션만, 탭 버튼은 제외) */
 section[data-tab] {
   display: none;
