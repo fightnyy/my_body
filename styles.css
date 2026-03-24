@@ -1462,6 +1462,35 @@ body {
   pointer-events: none;
 }
 
+/* 알림 허용 배너 */
+.notification-banner {
+  margin: 0.5rem 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe9a0 100%);
+  color: #664d03;
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.notification-banner p {
+  margin: 0 0 0.6rem;
+}
+
+.notification-banner button {
+  width: 100%;
+  padding: 0.65rem;
+  font-size: 0.95rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .notification-banner {
+    background: linear-gradient(135deg, #3d3200 0%, #4a3c00 100%);
+    color: #ffe082;
+  }
+}
+
 /* 루틴 탭 시작하기 버튼 */
 .start-from-routine-btn {
   width: 100%;

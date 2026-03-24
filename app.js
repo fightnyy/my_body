@@ -2425,11 +2425,42 @@ function requestNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission().then((perm) => {
       console.log("[Notification] permission:", perm);
+      updateNotificationBanner();
     });
   } else if (!("Notification" in window)) {
     console.warn("[Notification] not supported in this browser/context");
   }
 }
+
+// ── 알림 배너 표시/숨김 ──
+const notificationBanner = document.querySelector("#notification-banner");
+const enableNotificationBtn = document.querySelector("#enable-notification-btn");
+
+function updateNotificationBanner() {
+  if (!notificationBanner) return;
+  const supported = "Notification" in window;
+  const granted = supported && Notification.permission === "granted";
+  const denied = supported && Notification.permission === "denied";
+
+  if (!supported || granted) {
+    notificationBanner.style.display = "none";
+  } else if (denied) {
+    notificationBanner.querySelector("p").textContent = "🔕 알림이 차단되어 있어요. 기기 설정 > Safari/xerxise > 알림에서 허용해주세요.";
+    notificationBanner.querySelector("button").style.display = "none";
+    notificationBanner.style.display = "block";
+  } else {
+    notificationBanner.style.display = "block";
+  }
+}
+
+if (enableNotificationBtn) {
+  enableNotificationBtn.addEventListener("click", () => {
+    requestNotificationPermission();
+  });
+}
+
+// 초기 배너 상태 설정
+updateNotificationBanner();
 
 function sendBackgroundNotification(title, body) {
   if ("Notification" in window && Notification.permission !== "granted") return;
