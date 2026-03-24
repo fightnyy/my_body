@@ -2410,6 +2410,15 @@ function triggerAlarm(baseFrequency = 880) {
   }, 1000);
 }
 
+// ── Service Worker 등록 (PWA + 백그라운드 알림) ──
+let swRegistration = null;
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").then((reg) => {
+    swRegistration = reg;
+    console.log("[SW] registered", reg.scope);
+  }).catch((err) => console.warn("[SW] registration failed", err));
+}
+
 function requestNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
@@ -2417,12 +2426,25 @@ function requestNotificationPermission() {
 }
 
 function sendBackgroundNotification(title, body) {
-  if ("Notification" in window && Notification.permission === "granted") {
-    try {
-      new Notification(title, { body, icon: "./favicon.svg" });
-    } catch {
-      // Silent fail
-    }
+  if ("Notification" in window && Notification.permission !== "granted") return;
+
+  // Service Worker 알림 (PWA 백그라운드에서도 동작)
+  if (swRegistration) {
+    swRegistration.showNotification(title, {
+      body,
+      icon: "./favicon.svg",
+      tag: "xerxise-alert",
+      requireInteraction: true,
+      vibrate: [200, 100, 200],
+    }).catch(() => {});
+    return;
+  }
+
+  // Fallback: 일반 Notification
+  try {
+    new Notification(title, { body, icon: "./favicon.svg" });
+  } catch {
+    // Silent fail
   }
 }
 
