@@ -71,6 +71,18 @@
         <p class="eyebrow">Workout Tracker</p>
         <h1>xerxise</h1>
         <p class="subtitle">세트 카운트, 시작 타이머, 일자별 운동 기록까지 한 번에 관리합니다.</p>
+        <div class="streak-bar" id="streak-bar">
+          <div class="streak-item">
+            <span class="streak-icon">🔥</span>
+            <span id="streak-count">0일 연속</span>
+          </div>
+          <div class="streak-item">
+            <span id="weekly-progress">이번 주 0/3회</span>
+          </div>
+          <div class="streak-item">
+            <span id="total-workouts">총 0회</span>
+          </div>
+        </div>
       </header>
 
       <section class="card recommend" data-tab="workout" aria-label="맞춤 운동 추천">
@@ -238,6 +250,14 @@
             <button type="button" class="type-btn" data-type="bodyweight">맨몸</button>
             <button type="button" class="type-btn" data-type="time">시간</button>
           </div>
+          <select id="exercise-rest" class="rest-select" aria-label="쉬는 시간">
+            <option value="30">30초</option>
+            <option value="60" selected>60초</option>
+            <option value="90">90초</option>
+            <option value="120">2분</option>
+            <option value="180">3분</option>
+            <option value="300">5분</option>
+          </select>
           <button type="submit">추가</button>
         </form>
         <div class="preset-row">

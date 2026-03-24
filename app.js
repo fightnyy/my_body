@@ -651,6 +651,7 @@ renderAuthStatus();
 renderRoutine();
 renderSession();
 renderHistory();
+updateStreakBar();
 
 setupAuth();
 renderOnboarding();
@@ -702,6 +703,7 @@ if (startFromRoutineBtn) {
 }
 
 // ── 운동 유형 토글 핸들러 ──
+const exerciseRestSelect = document.querySelector("#exercise-rest");
 const exerciseTypeToggle = document.querySelector("#exercise-type-toggle");
 if (exerciseTypeToggle) {
   exerciseTypeToggle.addEventListener("click", (e) => {
@@ -918,6 +920,7 @@ form.addEventListener("submit", (event) => {
     completedSets: 0,
     setsDetail: [],
     exerciseType: selectedExerciseType,
+    restSeconds: exerciseRestSelect ? Number(exerciseRestSelect.value) : ALERT_SECONDS,
     description: `${name} 운동입니다. 안정적인 자세를 만든 뒤 반복하세요.`,
   });
 
@@ -937,6 +940,8 @@ form.addEventListener("submit", (event) => {
     const weightBtn = exerciseTypeToggle.querySelector('[data-type="weight"]');
     if (weightBtn) weightBtn.classList.add("active");
   }
+  // 쉬는 시간 선택 초기화
+  if (exerciseRestSelect) exerciseRestSelect.value = "60";
   nameInput.focus();
 });
 
@@ -1142,18 +1147,34 @@ setActionBtn.addEventListener("click", () => {
     sessionStatus.textContent = `${exercise.name} ${exercise.completedSets + 1}세트 진행 중`;
     countdownEl.textContent = "세트 진행 중";
     const exType = exercise.exerciseType || "weight";
+    const lastData = getLastSessionData(exercise.name);
     if (exType === "weight") {
-      if (weightInput) { weightInput.classList.remove("hidden"); weightInput.value = ""; weightInput.focus(); }
-      if (repsInput) { repsInput.classList.remove("hidden"); repsInput.value = ""; }
+      if (weightInput) {
+        weightInput.classList.remove("hidden");
+        if (!weightInput.value && lastData && lastData.weight) weightInput.value = lastData.weight;
+        weightInput.focus();
+      }
+      if (repsInput) {
+        repsInput.classList.remove("hidden");
+        if (!repsInput.value && lastData && lastData.reps) repsInput.value = lastData.reps;
+      }
       if (timeInput) timeInput.classList.add("hidden");
     } else if (exType === "bodyweight") {
       if (weightInput) weightInput.classList.add("hidden");
-      if (repsInput) { repsInput.classList.remove("hidden"); repsInput.value = ""; repsInput.focus(); }
+      if (repsInput) {
+        repsInput.classList.remove("hidden");
+        if (!repsInput.value && lastData && lastData.reps) repsInput.value = lastData.reps;
+        repsInput.focus();
+      }
       if (timeInput) timeInput.classList.add("hidden");
     } else if (exType === "time") {
       if (weightInput) weightInput.classList.add("hidden");
       if (repsInput) repsInput.classList.add("hidden");
-      if (timeInput) { timeInput.classList.remove("hidden"); timeInput.value = ""; timeInput.focus(); }
+      if (timeInput) {
+        timeInput.classList.remove("hidden");
+        if (!timeInput.value && lastData && lastData.time) timeInput.value = lastData.time;
+        timeInput.focus();
+      }
     }
     return;
   }
@@ -1259,15 +1280,16 @@ function findNextIncompleteExercise(fromIdx) {
 function armNextSet() {
   clearReminderTimer();
   state.waitingForStart = true;
-  state.countdown = ALERT_SECONDS;
   state.countdownStartMs = Date.now();
 
   const exercise = state.routine[state.currentExerciseIdx];
+  const restTime = exercise.restSeconds || ALERT_SECONDS;
+  state.countdown = restTime;
   setActionBtn.textContent = "세트 시작";
   if (repsInput) repsInput.classList.add("hidden");
   if (weightInput) weightInput.classList.add("hidden");
   if (timeInput) timeInput.classList.add("hidden");
-  sessionStatus.textContent = `${exercise.name} ${exercise.completedSets + 1}세트: ${ALERT_SECONDS}초 안에 세트 시작을 누르세요.`;
+  sessionStatus.textContent = `${exercise.name} ${exercise.completedSets + 1}세트: ${restTime}초 안에 세트 시작을 누르세요.`;
   startReminderTimer();
 }
 
@@ -1276,7 +1298,9 @@ function startReminderTimer() {
 
   state.timerId = window.setInterval(() => {
     const elapsed = Math.floor((Date.now() - state.countdownStartMs) / 1000);
-    state.countdown = Math.max(0, ALERT_SECONDS - elapsed);
+    const exercise = state.routine[state.currentExerciseIdx];
+    const restTime = exercise ? (exercise.restSeconds || ALERT_SECONDS) : ALERT_SECONDS;
+    state.countdown = Math.max(0, restTime - elapsed);
     countdownEl.textContent = `${state.countdown}초`;
 
     if (state.countdown > 0) {
@@ -1367,6 +1391,7 @@ function finishSession({ manual }) {
   renderRoutine();
   renderSession();
   renderHistory();
+  updateStreakBar();
 }
 
 function resetSession({ message = "" } = {}) {
@@ -1992,11 +2017,102 @@ function getPreviewExercise() {
   return state.routine.find((exercise) => exercise.id === state.previewExerciseId) || state.routine[0];
 }
 
+function calculateStreak() {
+  const doneDateKeys = new Set(
+    state.history
+      .filter((e) => e.status === "완료" || e.status === "중간 종료")
+      .map((e) => e.dateKey)
+  );
+  const sorted = Array.from(doneDateKeys).sort((a, b) => b.localeCompare(a));
+  if (sorted.length === 0) return 0;
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const yesterdayKey = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().slice(0, 10);
+  })();
+
+  // streak only counts if today or yesterday has a workout
+  if (sorted[0] !== todayKey && sorted[0] !== yesterdayKey) return 0;
+
+  let streak = 0;
+  let cursor = new Date(sorted[0]);
+  for (const key of sorted) {
+    const expected = cursor.toISOString().slice(0, 10);
+    if (key === expected) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function calculateWeeklyCount() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const diffToMon = (day === 0 ? -6 : 1 - day);
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMon);
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  const monKey = monday.toISOString().slice(0, 10);
+  const sunKey = sunday.toISOString().slice(0, 10);
+
+  const uniqueDays = new Set(
+    state.history
+      .filter((e) => e.status === "완료" || e.status === "중간 종료")
+      .filter((e) => e.dateKey >= monKey && e.dateKey <= sunKey)
+      .map((e) => e.dateKey)
+  );
+  return uniqueDays.size;
+}
+
+function updateStreakBar() {
+  const streakEl = document.querySelector("#streak-count");
+  const weeklyEl = document.querySelector("#weekly-progress");
+  const totalEl = document.querySelector("#total-workouts");
+  if (!streakEl || !weeklyEl || !totalEl) return;
+
+  const streak = calculateStreak();
+  const weeklyCount = calculateWeeklyCount();
+  const weeklyGoal = Number(localStorage.getItem("xerxise-weekly-goal-v1") || 3);
+  const total = new Set(
+    state.history
+      .filter((e) => e.status === "완료" || e.status === "중간 종료")
+      .map((e) => e.dateKey)
+  ).size;
+
+  streakEl.textContent = `${streak}일 연속`;
+  weeklyEl.textContent = `이번 주 ${weeklyCount}/${weeklyGoal}회`;
+  totalEl.textContent = `총 ${total}회`;
+}
+
 function normalizeExerciseName(name) {
   if (typeof name !== "string") {
     return "";
   }
   return name.replace(/\s+/g, "").toLowerCase();
+}
+
+function getLastSessionData(exerciseName) {
+  const key = normalizeExerciseName(exerciseName);
+  for (let i = 0; i < state.history.length; i++) {
+    const entry = state.history[i];
+    if (!Array.isArray(entry.exercises)) continue;
+    const match = entry.exercises.find(
+      (ex) => normalizeExerciseName(ex.name) === key
+    );
+    if (match && Array.isArray(match.setsDetail) && match.setsDetail.length > 0) {
+      return match.setsDetail[match.setsDetail.length - 1];
+    }
+  }
+  return null;
 }
 
 function findCanonicalExerciseByName(name) {
@@ -2020,6 +2136,7 @@ function normalizeRoutineArray(parsed) {
         completedSets: Number.isInteger(item.completedSets) ? item.completedSets : 0,
         setsDetail: Array.isArray(item.setsDetail) ? item.setsDetail : [],
         exerciseType: ["weight", "bodyweight", "time"].includes(item.exerciseType) ? item.exerciseType : "weight",
+        restSeconds: Number.isFinite(item.restSeconds) && item.restSeconds > 0 ? Number(item.restSeconds) : ALERT_SECONDS,
         description:
           typeof item.description === "string" && item.description.trim()
             ? item.description
@@ -2206,6 +2323,7 @@ async function hydrateFromCloudForCurrentUser() {
     renderRoutine();
     renderSession();
     renderHistory();
+    updateStreakBar();
   } catch {
     setAuthFeedback("클라우드 불러오기에 실패해 로컬 데이터를 사용합니다.", "error");
   }
