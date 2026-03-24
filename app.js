@@ -691,6 +691,7 @@ switchTab("routine");
 const startFromRoutineBtn = document.querySelector("#start-from-routine");
 if (startFromRoutineBtn) {
   startFromRoutineBtn.addEventListener("click", () => {
+    requestNotificationPermission();
     if (state.routine.length === 0) {
       alert("운동을 먼저 추가하세요.");
       return;
@@ -812,6 +813,7 @@ if (obFindWorkoutBtn) {
 
 if (obOwnRoutineBtn) {
   obOwnRoutineBtn.addEventListener("click", () => {
+    requestNotificationPermission();
     dismissOnboarding();
     const wizSection = document.querySelector(".recommend");
     if (wizSection) wizSection.classList.add("hidden");
@@ -2421,7 +2423,11 @@ if ("serviceWorker" in navigator) {
 
 function requestNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
-    Notification.requestPermission();
+    Notification.requestPermission().then((perm) => {
+      console.log("[Notification] permission:", perm);
+    });
+  } else if (!("Notification" in window)) {
+    console.warn("[Notification] not supported in this browser/context");
   }
 }
 
