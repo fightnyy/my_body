@@ -1462,12 +1462,12 @@ body {
   pointer-events: none;
 }
 
-/* 탭별 섹션 표시/숨김 */
-[data-tab] {
+/* 탭별 섹션 표시/숨김 (섹션만, 탭 버튼은 제외) */
+section[data-tab] {
   display: none;
 }
 
-[data-tab].tab-visible {
+section[data-tab].tab-visible {
   display: block;
 }
 
