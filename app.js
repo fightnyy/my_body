@@ -656,13 +656,13 @@ setupAuth();
 renderOnboarding();
 
 // ── 탭 네비게이션 ──
-let activeTab = "routine";
+let activeTab = "workout";
 const tabBar = document.querySelector("#tab-bar");
 const tabSections = document.querySelectorAll("[data-tab]");
 const tabBtns = document.querySelectorAll(".tab-btn[data-tab]");
 
 function switchTab(tabName) {
-  if (state.active && tabName !== "workout") {
+  if (state.active && tabName === "history") {
     if (!window.confirm("운동 중입니다. 탭을 전환하면 운동 화면을 벗어납니다. 계속할까요?")) {
       return;
     }
@@ -685,7 +685,7 @@ if (tabBar) {
 }
 
 // 초기 탭 표시
-switchTab("routine");
+switchTab("workout");
 
 // ── 루틴 탭 "시작하기" 버튼 ──
 const startFromRoutineBtn = document.querySelector("#start-from-routine");
@@ -1079,6 +1079,7 @@ startSessionBtn.addEventListener("click", () => {
   state.completionMessage = "";
   state.currentExerciseIdx = 0;
   state.sessionStartedAtMs = Date.now();
+  document.body.classList.add("session-active");
 
   // 포커스 모드 진입
   switchTab("workout");
@@ -1350,6 +1351,7 @@ function finishSession({ manual }) {
   state.activeSessionId = "";
   state.currentExerciseIdx = 0;
   state.completionMessage = manual ? "운동을 종료했습니다." : "운동 완료. 잘했습니다.";
+  document.body.classList.remove("session-active");
 
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
@@ -1376,10 +1378,11 @@ function resetSession({ message = "" } = {}) {
   state.sessionStartedAtMs = 0;
   state.activeSessionId = "";
   state.completionMessage = message;
+  document.body.classList.remove("session-active");
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
-  switchTab("routine");
+  switchTab("workout");
 
   if (!state.previewExerciseId) {
     state.previewExerciseId = state.routine[0]?.id || "";
@@ -1916,6 +1919,7 @@ function loadDataForCurrentUser() {
   state.waitingForStart = false;
   clearReminderTimer();
   state.active = false;
+  document.body.classList.remove("session-active");
 
   if (state.routine.length > 0) {
     state.previewExerciseId = state.routine[0].id;
