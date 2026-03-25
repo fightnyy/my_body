@@ -2148,11 +2148,8 @@ body:not(.session-active) .set-dot.filled {
 
 .month-stats {
   display: flex;
-  gap: 0.75rem;
-  font-size: 0.78rem;
-  color: var(--muted);
+  gap: 0.5rem;
   margin-bottom: 0.75rem;
-  flex-wrap: wrap;
 }
 
 .month-stat-value {
@@ -2289,4 +2286,206 @@ body:not(.session-active) .set-dot.filled {
   font-size: 0.75rem;
   margin-left: 0.2rem;
   vertical-align: middle;
+}
+
+/* ── Feature: History Sub-tabs ── */
+.history-subtabs {
+  display: flex;
+  gap: 0;
+  background: #eef2f7;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 1rem;
+}
+
+.history-subtab {
+  flex: 1;
+  padding: 0.5rem 0;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.history-subtab.active {
+  background: #fff;
+  color: var(--brand);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.history-subtab-content {
+  display: none;
+}
+
+.history-subtab-content.subtab-visible {
+  display: block;
+}
+
+/* ── Feature: Improved History Entry Cards ── */
+.history-entry {
+  padding: 0.85rem;
+  background: var(--bg-1);
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+}
+
+.history-entry:hover {
+  background: #e6f0ff;
+}
+
+.entry-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.entry-time {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.entry-duration {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.entry-status {
+  font-size: 0.68rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.status-완료 { background: rgba(10,158,111,0.12); color: #0a9e6f; }
+.status-중간종료 { background: rgba(244,105,47,0.12); color: #f4692f; }
+.status-진행중 { background: rgba(0,86,214,0.10); color: #0056d6; }
+
+.entry-summary {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.entry-exercises {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.entry-exercise-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background: rgba(0,86,214,0.08);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.chip-sets {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.entry-detail {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.entry-detail.hidden {
+  display: none;
+}
+
+/* ── Feature: History Empty State ── */
+.history-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 1rem;
+  gap: 0.75rem;
+}
+
+.history-empty-state h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.history-empty-state p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.history-empty-state button {
+  margin-top: 0.5rem;
+  padding: 0.7rem 2rem;
+}
+
+/* ── Feature: Calendar Today Marker ── */
+.calendar-day.cal-today {
+  box-shadow: inset 0 0 0 2px #f4692f;
+}
+
+/* ── Feature: Calendar Heatmap Legend ── */
+.cal-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 0.5rem;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.cal-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.cal-legend-dot.cal-heat-1 { background: rgba(0,86,214,0.15); }
+.cal-legend-dot.cal-heat-2 { background: rgba(0,86,214,0.35); }
+.cal-legend-dot.cal-heat-3 { background: rgba(0,86,214,0.6); }
+.cal-legend-dot.cal-heat-4 { background: #0056d6; }
+
+/* ── Feature: Month Stats Pills ── */
+.month-stat-pill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  background: rgba(0,86,214,0.06);
+  border-radius: 10px;
+}
+
+.month-stat-pill-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.month-stat-pill-label {
+  font-size: 0.68rem;
+  color: var(--muted);
 }

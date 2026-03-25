@@ -337,28 +337,51 @@
           <p id="history-summary">기록 0건</p>
         </div>
         <p id="calendar-scope" class="calendar-scope">캘린더 기준: 게스트</p>
-        <div id="history-list" class="history-list"></div>
-        <div class="calendar-wrap">
-          <div class="calendar-top">
-            <h3>운동 캘린더</h3>
-            <div class="calendar-nav">
-              <button id="calendar-prev" class="secondary" type="button" aria-label="이전 달">이전 달</button>
-              <p id="calendar-month" class="calendar-month">-</p>
-              <button id="calendar-next" class="secondary" type="button" aria-label="다음 달">다음 달</button>
-            </div>
-          </div>
-          <div id="month-stats" class="month-stats"></div>
-          <div class="calendar-weekdays" aria-hidden="true">
-            <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-          </div>
-          <div id="calendar-grid" class="calendar-grid"></div>
-          <div id="calendar-detail" class="calendar-detail">날짜를 선택하면 해당 날짜 운동 기록이 표시됩니다.</div>
+
+        <div class="history-subtabs" id="history-subtabs">
+          <button class="history-subtab active" data-subtab="calendar" type="button">캘린더</button>
+          <button class="history-subtab" data-subtab="list" type="button">기록</button>
+          <button class="history-subtab" data-subtab="growth" type="button">성장</button>
         </div>
-        <div class="progress-chart-section" id="progress-chart-section">
-          <h3 class="progress-chart-title">운동별 추이</h3>
-          <div class="exercise-chips" id="exercise-chips"></div>
-          <canvas id="progress-chart" width="360" height="200"></canvas>
-          <div class="chart-stats" id="chart-stats"></div>
+
+        <div class="history-subtab-content" data-subtab-content="calendar">
+          <div class="calendar-wrap">
+            <div class="calendar-top">
+              <h3>운동 캘린더</h3>
+              <div class="calendar-nav">
+                <button id="calendar-prev" class="secondary" type="button" aria-label="이전 달">이전 달</button>
+                <p id="calendar-month" class="calendar-month">-</p>
+                <button id="calendar-next" class="secondary" type="button" aria-label="다음 달">다음 달</button>
+              </div>
+            </div>
+            <div id="month-stats" class="month-stats"></div>
+            <div class="calendar-weekdays" aria-hidden="true">
+              <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+            </div>
+            <div id="calendar-grid" class="calendar-grid"></div>
+            <div class="cal-legend">
+              <span class="cal-legend-label">적음</span>
+              <span class="cal-legend-dot cal-heat-1"></span>
+              <span class="cal-legend-dot cal-heat-2"></span>
+              <span class="cal-legend-dot cal-heat-3"></span>
+              <span class="cal-legend-dot cal-heat-4"></span>
+              <span class="cal-legend-label">많음</span>
+            </div>
+            <div id="calendar-detail" class="calendar-detail">날짜를 선택하면 해당 날짜 운동 기록이 표시됩니다.</div>
+          </div>
+        </div>
+
+        <div class="history-subtab-content" data-subtab-content="list">
+          <div id="history-list" class="history-list"></div>
+        </div>
+
+        <div class="history-subtab-content" data-subtab-content="growth">
+          <div class="progress-chart-section" id="progress-chart-section">
+            <h3 class="progress-chart-title">운동별 추이</h3>
+            <div class="exercise-chips" id="exercise-chips"></div>
+            <canvas id="progress-chart" width="360" height="200"></canvas>
+            <div class="chart-stats" id="chart-stats"></div>
+          </div>
         </div>
       </section>
     </main>

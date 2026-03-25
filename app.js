@@ -694,6 +694,27 @@ if (tabBar) {
 // 초기 탭 표시
 switchTab("workout");
 
+// ── 기록 서브탭 ──
+let activeHistorySubtab = "calendar";
+const historySubtabBtns = document.querySelectorAll(".history-subtab");
+const historySubtabContents = document.querySelectorAll(".history-subtab-content");
+
+function switchHistorySubtab(subtab) {
+  activeHistorySubtab = subtab;
+  historySubtabBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.subtab === subtab));
+  historySubtabContents.forEach((el) => el.classList.toggle("subtab-visible", el.dataset.subtabContent === subtab));
+}
+
+const historySubtabsEl = document.getElementById("history-subtabs");
+if (historySubtabsEl) {
+  historySubtabsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".history-subtab");
+    if (btn) switchHistorySubtab(btn.dataset.subtab);
+  });
+}
+
+switchHistorySubtab("calendar");
+
 // ── 루틴 탭 "시작하기" 버튼 ──
 const startFromRoutineBtn = document.querySelector("#start-from-routine");
 if (startFromRoutineBtn) {
@@ -1829,14 +1850,43 @@ function renderHistory() {
     historySummaryEl.textContent = "기록 0건";
     state.selectedDateKey = "";
 
-    const empty = document.createElement("p");
-    empty.className = "history-empty";
-    empty.textContent = "아직 저장된 운동 기록이 없습니다.";
-    historyListEl.appendChild(empty);
+    // Hide sub-tabs, show empty state directly in the card
+    const _subtabsEl = document.getElementById("history-subtabs");
+    if (_subtabsEl) _subtabsEl.style.display = "none";
+    document.querySelectorAll(".history-subtab-content").forEach((el) => { el.style.display = "none"; });
+
+    // Show the list container so empty state is visible
+    const listContainer = historyListEl.closest(".history-subtab-content");
+    if (listContainer) listContainer.style.display = "block";
+
+    const emptyState = document.createElement("div");
+    emptyState.className = "history-empty-state";
+    emptyState.innerHTML = `
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="28" stroke="#0056d6" stroke-width="2" opacity="0.3"/>
+        <path d="M22 32 L30 40 L42 24" stroke="#0056d6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3>첫 기록을 만들어보세요</h3>
+      <p>운동을 완료하면 달력과 성장 그래프로<br>나의 변화를 확인할 수 있어요</p>
+      <button class="primary" id="empty-state-start" type="button">운동 시작하기</button>
+    `;
+    historyListEl.appendChild(emptyState);
+
+    const emptyStartBtn = emptyState.querySelector("#empty-state-start");
+    if (emptyStartBtn) {
+      emptyStartBtn.addEventListener("click", () => switchTab("workout"));
+    }
+
     renderCalendar();
     renderProgressChart();
     return;
   }
+
+  // Restore sub-tabs visibility
+  const _subtabsEl2 = document.getElementById("history-subtabs");
+  if (_subtabsEl2) _subtabsEl2.style.display = "";
+  document.querySelectorAll(".history-subtab-content").forEach((el) => { el.style.display = ""; });
+  switchHistorySubtab(activeHistorySubtab);
 
   historySummaryEl.textContent = `기록 ${state.history.length}건`;
 
@@ -1864,21 +1914,57 @@ function renderHistory() {
       const card = document.createElement("article");
       card.className = "history-entry";
 
-      const top = document.createElement("p");
-      top.className = "history-top";
+      // Header row: time range, duration, status badge
+      const header = document.createElement("div");
+      header.className = "entry-header";
+
+      const timeSpan = document.createElement("span");
+      timeSpan.className = "entry-time";
       const endTimeText = entry.endedAt ? formatTime(entry.endedAt) : "진행 중";
-      const durationText = entry.status === "진행 중" ? "" : ` · ${formatDuration(entry.durationSec)}`;
-      top.textContent = `${formatTime(entry.startedAt)} - ${endTimeText}${durationText} · ${entry.status}`;
-      card.appendChild(top);
+      timeSpan.textContent = `${formatTime(entry.startedAt)} - ${endTimeText}`;
+      header.appendChild(timeSpan);
 
-      const setMeta = document.createElement("p");
-      setMeta.className = "history-meta";
-      setMeta.textContent = `총 ${entry.totalCompletedSets}세트`;
-      card.appendChild(setMeta);
+      if (entry.durationSec && entry.status !== "진행 중") {
+        const durSpan = document.createElement("span");
+        durSpan.className = "entry-duration";
+        durSpan.textContent = formatDuration(entry.durationSec);
+        header.appendChild(durSpan);
+      }
 
-      const detail = document.createElement("p");
-      detail.className = "history-detail";
-      if (entry.exercises.length === 0) {
+      const statusSpan = document.createElement("span");
+      const statusClass = entry.status === "완료" ? "status-완료"
+        : entry.status === "진행 중" ? "status-진행중"
+        : "status-중간종료";
+      statusSpan.className = `entry-status ${statusClass}`;
+      statusSpan.textContent = entry.status;
+      header.appendChild(statusSpan);
+
+      card.appendChild(header);
+
+      // Summary line
+      const summary = document.createElement("div");
+      summary.className = "entry-summary";
+      const exerciseCount = entry.exercises ? entry.exercises.length : 0;
+      summary.textContent = `총 ${entry.totalCompletedSets}세트 · ${exerciseCount}가지 운동`;
+      card.appendChild(summary);
+
+      // Exercise chips
+      if (entry.exercises && entry.exercises.length > 0) {
+        const chipsWrap = document.createElement("div");
+        chipsWrap.className = "entry-exercises";
+        entry.exercises.forEach((exercise) => {
+          const chip = document.createElement("div");
+          chip.className = "entry-exercise-chip";
+          chip.innerHTML = `${exercise.name} <span class="chip-sets">${exercise.completedSets}/${exercise.targetSets}</span>`;
+          chipsWrap.appendChild(chip);
+        });
+        card.appendChild(chipsWrap);
+      }
+
+      // Detail section (hidden, toggled on click)
+      const detail = document.createElement("div");
+      detail.className = "entry-detail hidden";
+      if (!entry.exercises || entry.exercises.length === 0) {
         detail.textContent = "진행한 세트 없음";
       } else {
         detail.textContent = entry.exercises
@@ -1891,6 +1977,10 @@ function renderHistory() {
           .join(" · ");
       }
       card.appendChild(detail);
+
+      card.addEventListener("click", () => {
+        detail.classList.toggle("hidden");
+      });
 
       day.appendChild(card);
     });
@@ -1933,6 +2023,8 @@ function renderCalendar() {
     calendarGridEl.appendChild(empty);
   }
 
+  const todayKey = formatDateKey(new Date());
+
   for (let day = 1; day <= lastDate; day += 1) {
     const dateKey = formatDateKey(new Date(cursor.getFullYear(), cursor.getMonth(), day));
     const entries = grouped.get(dateKey) || [];
@@ -1959,6 +2051,9 @@ function renderCalendar() {
     }
     if (state.selectedDateKey === dateKey) {
       button.classList.add("selected");
+    }
+    if (dateKey === todayKey) {
+      button.classList.add("cal-today");
     }
 
     const dayText = document.createElement("span");
@@ -3685,15 +3780,16 @@ function renderMonthStats(cursor, grouped) {
 
   monthStatsEl.innerHTML = "";
 
-  function makeStat(label, value) {
-    const span = document.createElement("span");
-    span.innerHTML = `${label}: <span class="month-stat-value">${value}</span>`;
-    return span;
+  function makePill(value, label) {
+    const pill = document.createElement("div");
+    pill.className = "month-stat-pill";
+    pill.innerHTML = `<span class="month-stat-pill-value">${value}</span><span class="month-stat-pill-label">${label}</span>`;
+    return pill;
   }
 
-  monthStatsEl.appendChild(makeStat("이번 달", `${workoutDays}회 운동`));
-  monthStatsEl.appendChild(makeStat("총 세트", `${totalSets}세트`));
-  monthStatsEl.appendChild(makeStat("연속", `${streak}일`));
+  monthStatsEl.appendChild(makePill(`${workoutDays}회`, "이번 달 운동"));
+  monthStatsEl.appendChild(makePill(`${totalSets}세트`, "총 세트"));
+  monthStatsEl.appendChild(makePill(`${streak}일`, "연속"));
 }
 
 // ─────────────────────────────────────────────
@@ -3708,15 +3804,17 @@ function renderProgressChart() {
   const chartStatsEl = document.querySelector("#chart-stats");
   if (!chipsEl || !chartCanvas || !chartStatsEl) return;
 
-  // 고유 운동 이름 수집
+  // 고유 운동 이름 수집 + 빈도 계산
   const nameMap = new Map(); // normalized -> display name
+  const freqMap = new Map(); // normalized -> count
   state.history.forEach((entry) => {
     if (!Array.isArray(entry.exercises)) return;
     entry.exercises.forEach((ex) => {
       if (ex.completedSets > 0) {
         const key = normalizeExerciseName(ex.name);
-        if (key && !nameMap.has(key)) {
-          nameMap.set(key, ex.name);
+        if (key) {
+          if (!nameMap.has(key)) nameMap.set(key, ex.name);
+          freqMap.set(key, (freqMap.get(key) || 0) + 1);
         }
       }
     });
@@ -3730,9 +3828,17 @@ function renderProgressChart() {
     return;
   }
 
-  // 유효한 active 운동 확인
+  // 유효한 active 운동 확인 — 없으면 가장 자주 훈련한 운동으로 자동 선택
   if (!_activeChartExercise || !nameMap.has(normalizeExerciseName(_activeChartExercise))) {
-    _activeChartExercise = nameMap.values().next().value;
+    let maxFreq = 0;
+    let mostFrequentKey = nameMap.keys().next().value;
+    freqMap.forEach((count, key) => {
+      if (count > maxFreq) {
+        maxFreq = count;
+        mostFrequentKey = key;
+      }
+    });
+    _activeChartExercise = nameMap.get(mostFrequentKey);
   }
 
   nameMap.forEach((displayName) => {
