@@ -4252,15 +4252,19 @@ function drawExerciseChart(exerciseName) {
 
   chartCanvas.style.display = "block";
 
-  // 캔버스 반응형 너비 설정
+  // 캔버스 반응형 너비 설정 (Retina 대응)
   const container = chartCanvas.parentElement;
   const containerWidth = container ? container.clientWidth - 32 : 360;
   const W = Math.max(280, containerWidth);
   const H = 200;
-  chartCanvas.width = W;
-  chartCanvas.height = H;
+  const dpr = window.devicePixelRatio || 1;
+  chartCanvas.width = W * dpr;
+  chartCanvas.height = H * dpr;
+  chartCanvas.style.width = W + "px";
+  chartCanvas.style.height = H + "px";
 
   const ctx = chartCanvas.getContext("2d");
+  ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
 
   const PAD_L = 44;
