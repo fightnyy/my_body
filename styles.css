@@ -385,28 +385,10 @@ button:disabled {
   color: #1a3f8f;
 }
 
+/* .exercise-item base styles moved to Feature: Exercise Card Stack section below */
+
 .exercise-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.7rem 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: #fff;
   cursor: pointer;
-}
-
-.exercise-item .name {
-  margin: 0;
-  font-weight: 600;
-  font-size: var(--text-md);
-  letter-spacing: -0.01em;
-}
-
-.exercise-item .meta {
-  margin: 0.15rem 0 0;
-  color: var(--muted);
-  font-size: var(--text-sm);
 }
 
 .remove-btn {
@@ -495,23 +477,7 @@ button:disabled {
   border-color: var(--brand);
 }
 
-.exercise-item.active-exercise {
-  border-color: rgba(0, 86, 214, 0.55);
-  box-shadow: 0 0 0 2px rgba(0, 86, 214, 0.12) inset;
-  background: rgba(0, 86, 214, 0.04);
-}
-
-.exercise-item.active-exercise .name::before {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--brand);
-  margin-right: 6px;
-  vertical-align: middle;
-  animation: pulse-dot 1.5s ease-in-out infinite;
-}
+/* .exercise-item.active-exercise and .name::before overridden in Feature: Exercise Card Stack section */
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
@@ -1888,6 +1854,216 @@ body.session-active .session-live-badge {
 
 .recent-routines-list::-webkit-scrollbar {
   height: 4px;
+}
+
+/* ── Feature: Exercise Card Stack ── */
+.exercise-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0.75rem 0.75rem 1rem;
+  border-left: 4px solid var(--ex-color, #0056d6);
+  border-radius: 12px;
+  background: var(--bg-1);
+  margin-bottom: 0.5rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  /* reset the old border shorthand that was set inline */
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+}
+
+.exercise-item[data-type="weight"]      { --ex-color: #0056d6; }
+.exercise-item[data-type="bodyweight"]  { --ex-color: #0a9e6f; }
+.exercise-item[data-type="time"]        { --ex-color: #f4692f; }
+
+/* override the old active-exercise styles */
+.exercise-item.active-exercise {
+  box-shadow: 0 8px 20px rgba(0,86,214,0.15);
+  border-left-width: 4px;
+  border-color: transparent;
+  background: var(--bg-1);
+}
+
+.exercise-item.active-exercise .name::before {
+  display: none;
+}
+
+.exercise-item.active-exercise::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--ex-color);
+  animation: pulse-bar 1.5s ease-in-out infinite;
+  border-radius: 4px 0 0 4px;
+}
+
+@keyframes pulse-bar {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* override old clickable-switch hover to match new card style */
+.exercise-item.clickable-switch:not(.active-exercise):hover {
+  border-color: transparent;
+  background: var(--bg-1);
+  box-shadow: 0 4px 12px rgba(0,86,214,0.1);
+}
+
+.exercise-item .name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.exercise-item .meta {
+  margin: 0.18rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.set-ring {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: conic-gradient(var(--ex-color, #0056d6) calc(var(--pct, 0) * 1%), #eef2f7 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: background 0.3s;
+}
+
+.set-ring-inner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+@keyframes set-done-shake {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-3px); }
+  40%  { transform: translateX(3px); }
+  60%  { transform: translateX(-2px); }
+  80%  { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+.exercise-item.set-done {
+  animation: set-done-shake 0.35s ease;
+}
+
+/* ── Feature: Immersive Session Board ── */
+body.session-active .card.session {
+  background: linear-gradient(160deg, #0a1628, #062044);
+  color: #fff;
+  border: none;
+}
+
+body.session-active .card.session .session-header h2 {
+  color: #fff;
+}
+
+body.session-active .card.session #session-status {
+  color: rgba(255,255,255,0.7);
+}
+
+body.session-active .card.session .meter .label {
+  color: rgba(255,255,255,0.6);
+}
+
+body.session-active .card.session .meter .value {
+  color: #fff;
+}
+
+body.session-active .card.session .meter.danger .value {
+  color: #ff6b6b;
+}
+
+body.session-active .card.session .meter {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.1);
+}
+
+body.session-active .card.session .guide-card {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.12);
+}
+
+body.session-active .card.session .guide-card .label,
+body.session-active .card.session .guide-card .guide-text {
+  color: rgba(255,255,255,0.8);
+}
+
+body.session-active .card.session .button-row .ghost {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85);
+  border-color: rgba(255,255,255,0.2);
+}
+
+body.session-active .card.session .focus-progress-text {
+  color: #0a9e6f;
+}
+
+/* Set progress dots */
+.set-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}
+
+.set-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: transparent;
+}
+
+.set-dot.filled {
+  background: #0a9e6f;
+  border-color: #0a9e6f;
+}
+
+/* idle (non-session) dot style */
+body:not(.session-active) .set-dot {
+  border-color: rgba(0,86,214,0.3);
+}
+
+body:not(.session-active) .set-dot.filled {
+  background: #0056d6;
+  border-color: #0056d6;
+}
+
+/* Session progress rail */
+.session-progress-rail {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.session-progress-fill {
+  height: 100%;
+  background: #0a9e6f;
+  border-radius: 3px;
+  transition: width 0.3s;
+  width: 0%;
 }
 
 .recent-routines-list::-webkit-scrollbar-track {

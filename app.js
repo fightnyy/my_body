@@ -1213,6 +1213,16 @@ setActionBtn.addEventListener("click", () => {
   exercise.completedSets += 1;
   saveRoutine(state.routine);
 
+  // 세트 완료 shake 애니메이션
+  const doneCardEl = exerciseList.querySelector(`[data-exercise-id="${exercise.id}"]`);
+  if (doneCardEl) {
+    doneCardEl.classList.remove("set-done");
+    // force reflow so animation re-triggers
+    void doneCardEl.offsetWidth;
+    doneCardEl.classList.add("set-done");
+    setTimeout(() => doneCardEl.classList.remove("set-done"), 350);
+  }
+
   // 진행 중 기록 실시간 업데이트
   updateActiveSessionHistory();
 
@@ -1641,16 +1651,29 @@ function renderRecentRoutines() {
   recentRoutinesEl.classList.remove("hidden");
 }
 
+function renderSetDots(completed, total) {
+  let html = "";
+  for (let i = 0; i < total; i++) {
+    html += `<span class="set-dot${i < completed ? " filled" : ""}"></span>`;
+  }
+  return html;
+}
+
 function renderRoutine() {
   exerciseList.innerHTML = "";
 
   state.routine.forEach((exercise, index) => {
     const item = template.content.firstElementChild.cloneNode(true);
     item.dataset.id = exercise.id;
+    item.dataset.exerciseId = exercise.id;
+
+    // data-type for accent bar color
+    const exType = exercise.exerciseType || "weight";
+    item.dataset.type = exType;
+
     const nameEl = item.querySelector(".name");
     nameEl.textContent = exercise.name;
     // 운동 유형 배지
-    const exType = exercise.exerciseType || "weight";
     if (exType !== "weight") {
       const badge = document.createElement("span");
       badge.className = `exercise-type-badge ${exType}`;
@@ -1658,10 +1681,26 @@ function renderRoutine() {
       nameEl.appendChild(badge);
     }
 
+    // Meta row: "N세트 · 타입 · 휴식Xs"
+    const typeLabel = exType === "weight" ? "웨이트" : exType === "bodyweight" ? "맨몸" : "시간";
+    const restSec = exercise.restSeconds || 60;
+    const restLabel = restSec >= 60 && restSec % 60 === 0 ? `${restSec / 60}분` : `${restSec}초`;
     const setsInfo = exercise.setsDetail && exercise.setsDetail.length > 0
       ? ` (${exercise.setsDetail.map(formatSetDetail).join(", ")})`
       : "";
-    item.querySelector(".meta").textContent = `${exercise.completedSets} / ${exercise.targetSets} 세트${setsInfo}`;
+    item.querySelector(".meta").textContent =
+      `${exercise.targetSets}세트 · ${typeLabel} · 휴식 ${restLabel}${setsInfo}`;
+
+    // Set ring: conic-gradient progress
+    const pct = exercise.targetSets > 0
+      ? Math.round((exercise.completedSets / exercise.targetSets) * 100)
+      : 0;
+    const ring = item.querySelector(".set-ring");
+    if (ring) {
+      ring.style.setProperty("--pct", pct);
+      const inner = ring.querySelector(".set-ring-inner");
+      if (inner) inner.textContent = `${exercise.completedSets}/${exercise.targetSets}`;
+    }
 
     if (state.active && index === state.currentExerciseIdx) {
       item.classList.add("active-exercise");
@@ -1671,8 +1710,7 @@ function renderRoutine() {
         item.style.opacity = "0.5";
       }
     } else if (!state.active && exercise.id === state.previewExerciseId) {
-      item.style.borderColor = "rgba(244, 105, 47, 0.55)";
-      item.style.boxShadow = "0 0 0 2px rgba(244, 105, 47, 0.14) inset";
+      item.style.setProperty("--ex-color", "#f4692f");
     }
 
     const removeButton = item.querySelector(".remove-btn");
@@ -1690,6 +1728,10 @@ function renderSession() {
   startSessionBtn.disabled = state.routine.length === 0 || state.active;
   setActionBtn.disabled = !state.active;
   endSessionBtn.disabled = !state.active;
+
+  const setDotsEl = document.querySelector("#set-dots");
+  const sessionRail = document.querySelector("#session-progress-rail");
+  const sessionFill = document.querySelector("#session-progress-fill");
 
   if (!state.active || !currentActive) {
     if (state.completionMessage) {
@@ -1717,12 +1759,22 @@ function renderSession() {
     // 진행률 바 숨김
     const progressWrapInactive = document.querySelector("#focus-progress-wrap");
     if (progressWrapInactive) progressWrapInactive.classList.add("hidden");
+
+    // set dots: clear
+    if (setDotsEl) setDotsEl.innerHTML = "";
+    // session rail: hide
+    if (sessionRail) sessionRail.style.display = "none";
     return;
   }
 
   currentExerciseEl.textContent = currentActive.name;
   currentSetEl.textContent = `${Math.min(currentActive.completedSets + 1, currentActive.targetSets)} / ${currentActive.targetSets}`;
   renderExerciseDescription(currentActive.description);
+
+  // Set dots
+  if (setDotsEl) {
+    setDotsEl.innerHTML = renderSetDots(currentActive.completedSets, currentActive.targetSets);
+  }
 
   if (state.waitingForStart) {
     countdownEl.textContent = `${Math.max(0, state.countdown)}초`;
@@ -1746,6 +1798,12 @@ function renderSession() {
   }
   if (progressBar) progressBar.style.width = `${pct}%`;
   if (progressText) progressText.textContent = `${pct}%`;
+
+  // Session progress rail
+  if (sessionRail && sessionFill) {
+    sessionRail.style.display = "block";
+    sessionFill.style.width = `${pct}%`;
+  }
 }
 
 function renderExerciseDescription(description) {

@@ -292,11 +292,15 @@
           <article class="meter">
             <p class="label">현재 세트</p>
             <p id="current-set" class="value">0 / 0</p>
+            <div id="set-dots" class="set-dots"></div>
           </article>
           <article class="meter danger">
             <p class="label">세트 시작 타이머</p>
             <p id="countdown" class="value">-</p>
           </article>
+        </div>
+        <div class="session-progress-rail" id="session-progress-rail" style="display:none;">
+          <div class="session-progress-fill" id="session-progress-fill"></div>
         </div>
 
         <article class="guide-card">
@@ -380,6 +384,9 @@
           <button class="remove-btn" type="button" aria-label="운동 삭제">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
           </button>
+        </div>
+        <div class="set-ring">
+          <div class="set-ring-inner"></div>
         </div>
       </li>
     </template>
