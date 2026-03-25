@@ -1413,8 +1413,8 @@ button:disabled {
 
 .type-btn {
   flex: 1;
-  padding: 0.45rem 0.3rem;
-  font-size: 0.78rem;
+  padding: 0.35rem 0.2rem;
+  font-size: 0.72rem;
   font-weight: 600;
   border: none;
   border-right: 1px solid var(--line);
@@ -1786,8 +1786,9 @@ body.session-active .session-live-badge {
 
 /* ── Rest time select ── */
 .rest-select {
-  height: 2.4rem;
-  padding: 0 0.6rem;
+  height: 2.1rem;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
   border: 1.5px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--card);

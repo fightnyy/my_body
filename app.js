@@ -2212,14 +2212,7 @@ function setupAuth() {
       renderSession();
       renderHistory();
       sessionStatus.textContent = user ? `${state.user.name} 계정 데이터를 불러왔습니다.` : "게스트 모드로 전환했습니다.";
-      setAuthFeedback(
-        user
-          ? state.firestoreReady
-            ? "로그인 성공. Firebase 클라우드와 동기화됩니다."
-            : "로그인 성공. 현재는 로컬 저장만 사용 중입니다."
-          : "게스트 모드입니다. 로그인하면 기록 유실 위험을 줄일 수 있어요.",
-        "info",
-      );
+      // Auth feedback removed — not important for the user to see
     }
   });
 
