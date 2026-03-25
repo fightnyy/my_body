@@ -1,12 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="RepX">
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0a3fa9" />
-      <stop offset="100%" stop-color="#1aa0ff" />
+      <stop offset="0%" stop-color="#0a3fa9"/>
+      <stop offset="100%" stop-color="#1aa0ff"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
   </defs>
-  <rect width="128" height="128" rx="26" fill="url(#bg)" />
-  <rect x="18" y="18" width="92" height="92" rx="20" fill="#ffffff" opacity="0.08" />
-  <path d="M34 40 L58 64 L34 88" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-  <path d="M94 40 L70 64 L94 88" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+  <!-- Background rounded square -->
+  <rect width="128" height="128" rx="26" fill="url(#bg)"/>
+
+  <!-- Subtle top-shine for depth -->
+  <rect width="128" height="64" rx="26" fill="url(#shine)"/>
+
+  <!-- Athletic X — tapered arms with kinetic center break -->
+  <polygon points="22,18 38,18 106,110 90,110" fill="white"/>
+  <polygon points="90,18 106,18 38,110 22,110" fill="white"/>
+
+  <!-- Center diamond cut-out for kinetic energy -->
+  <polygon points="64,52 73,64 64,76 55,64" fill="url(#bg)"/>
 </svg>
