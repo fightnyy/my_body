@@ -112,6 +112,262 @@ const DEFAULT_LOWER_ROUTINE_TEMPLATE = [
 const ALL_DEFAULT_ROUTINES = [...DEFAULT_UPPER_ROUTINE_TEMPLATE, ...DEFAULT_LOWER_ROUTINE_TEMPLATE];
 
 // ──────────────────────────────────────────────────────────
+// 운동 데이터베이스 (검색용)
+// ──────────────────────────────────────────────────────────
+const EXERCISE_DB = [
+  // 가슴
+  { name: "바벨 벤치프레스", type: "weight", sets: 4, rest: 90, category: "가슴" },
+  { name: "덤벨 벤치프레스", type: "weight", sets: 4, rest: 90, category: "가슴" },
+  { name: "인클라인 벤치프레스", type: "weight", sets: 4, rest: 90, category: "가슴" },
+  { name: "케이블 크로스오버", type: "weight", sets: 3, rest: 60, category: "가슴" },
+  { name: "딥스", type: "bodyweight", sets: 3, rest: 90, category: "가슴" },
+  { name: "펙덱 플라이", type: "weight", sets: 3, rest: 60, category: "가슴" },
+  { name: "체스트 프레스 머신", type: "weight", sets: 3, rest: 60, category: "가슴" },
+  // 등
+  { name: "랫풀다운", type: "weight", sets: 4, rest: 90, category: "등" },
+  { name: "바벨 로우", type: "weight", sets: 4, rest: 90, category: "등" },
+  { name: "덤벨 로우", type: "weight", sets: 4, rest: 90, category: "등" },
+  { name: "시티드 케이블 로우", type: "weight", sets: 4, rest: 90, category: "등" },
+  { name: "풀업", type: "bodyweight", sets: 3, rest: 120, category: "등" },
+  { name: "친업", type: "bodyweight", sets: 3, rest: 120, category: "등" },
+  { name: "티바 로우", type: "weight", sets: 4, rest: 90, category: "등" },
+  { name: "페이스풀", type: "weight", sets: 3, rest: 60, category: "등" },
+  // 어깨
+  { name: "오버헤드 프레스", type: "weight", sets: 4, rest: 90, category: "어깨" },
+  { name: "사이드 레터럴 레이즈", type: "weight", sets: 3, rest: 60, category: "어깨" },
+  { name: "프론트 레이즈", type: "weight", sets: 3, rest: 60, category: "어깨" },
+  { name: "리어 델트 플라이", type: "weight", sets: 3, rest: 60, category: "어깨" },
+  { name: "아놀드 프레스", type: "weight", sets: 3, rest: 90, category: "어깨" },
+  { name: "덤벨 숄더 프레스", type: "weight", sets: 4, rest: 90, category: "어깨" },
+  // 하체
+  { name: "바벨 스쿼트", type: "weight", sets: 4, rest: 120, category: "하체" },
+  { name: "레그프레스", type: "weight", sets: 4, rest: 90, category: "하체" },
+  { name: "루마니안 데드리프트", type: "weight", sets: 4, rest: 90, category: "하체" },
+  { name: "레그 익스텐션", type: "weight", sets: 3, rest: 60, category: "하체" },
+  { name: "레그 컬", type: "weight", sets: 4, rest: 60, category: "하체" },
+  { name: "힙 쓰러스트", type: "weight", sets: 4, rest: 90, category: "하체" },
+  { name: "런지", type: "weight", sets: 3, rest: 60, category: "하체" },
+  { name: "카프 레이즈", type: "weight", sets: 4, rest: 60, category: "하체" },
+  { name: "불가리안 스플릿 스쿼트", type: "weight", sets: 3, rest: 90, category: "하체" },
+  // 팔
+  { name: "바벨 컬", type: "weight", sets: 3, rest: 60, category: "팔" },
+  { name: "덤벨 컬", type: "weight", sets: 3, rest: 60, category: "팔" },
+  { name: "트라이셉 푸쉬다운", type: "weight", sets: 3, rest: 60, category: "팔" },
+  { name: "해머 컬", type: "weight", sets: 3, rest: 60, category: "팔" },
+  { name: "오버헤드 트라이셉 익스텐션", type: "weight", sets: 3, rest: 60, category: "팔" },
+  { name: "케이블 컬", type: "weight", sets: 3, rest: 60, category: "팔" },
+  // 코어
+  { name: "플랭크", type: "time", sets: 3, rest: 60, category: "코어" },
+  { name: "크런치", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
+  { name: "레그 레이즈", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
+  { name: "행잉 니업", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
+  { name: "러시안 트위스트", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
+  { name: "사이드 플랭크", type: "time", sets: 3, rest: 60, category: "코어" },
+  // 전신
+  { name: "데드리프트", type: "weight", sets: 4, rest: 180, category: "전신" },
+  { name: "클린 앤 프레스", type: "weight", sets: 4, rest: 120, category: "전신" },
+  { name: "버피", type: "bodyweight", sets: 3, rest: 90, category: "전신" },
+  // 기본 루틴 운동들 (DEFAULT_UPPER / DEFAULT_LOWER 포함)
+  { name: "스미스 머신 벤치 프레스", type: "weight", sets: 6, rest: 90, category: "가슴" },
+  { name: "케이블 시티드 로우", type: "weight", sets: 4, rest: 90, category: "등" },
+  { name: "어시스트 풀업", type: "bodyweight", sets: 4, rest: 120, category: "등" },
+  { name: "스탠딩 덤벨 숄더 프레스", type: "weight", sets: 3, rest: 90, category: "어깨" },
+  { name: "리버스 팩덱 플라이", type: "weight", sets: 4, rest: 60, category: "어깨" },
+  { name: "레그 프레스", type: "weight", sets: 4, rest: 90, category: "하체" },
+  { name: "바벨 힙 쓰러스트", type: "weight", sets: 3, rest: 90, category: "하체" },
+  { name: "스미스 머신 스쿼트", type: "weight", sets: 7, rest: 90, category: "하체" },
+  { name: "시티드 힙 어브덕션", type: "weight", sets: 2, rest: 60, category: "하체" },
+  { name: "시티드 힙 어덕션", type: "weight", sets: 2, rest: 60, category: "하체" },
+];
+
+function getPastExercises() {
+  const seen = new Map(); // normalized name -> entry
+  for (const entry of state.history) {
+    if (!Array.isArray(entry.exercises)) continue;
+    for (const ex of entry.exercises) {
+      if (!ex.name) continue;
+      const key = normalizeExerciseName(ex.name);
+      if (!seen.has(key)) {
+        seen.set(key, {
+          name: ex.name,
+          type: ex.exerciseType || "weight",
+          sets: ex.targetSets || 3,
+          rest: ex.restSeconds || ALERT_SECONDS,
+          category: "",
+          source: "history",
+        });
+      }
+    }
+  }
+  return Array.from(seen.values());
+}
+
+function searchExercises(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+
+  const past = getPastExercises();
+  const pastNames = new Set(past.map((e) => normalizeExerciseName(e.name)));
+
+  const pastMatches = past.filter((e) => e.name.toLowerCase().includes(q));
+
+  const dbMatches = EXERCISE_DB
+    .filter((e) => {
+      const normKey = normalizeExerciseName(e.name);
+      return !pastNames.has(normKey) && e.name.toLowerCase().includes(q);
+    })
+    .map((e) => ({ ...e, source: "db" }));
+
+  return [...pastMatches, ...dbMatches].slice(0, 8);
+}
+
+function getPopularExercises() {
+  // Count exercise frequency from history
+  const freq = new Map();
+  for (const entry of state.history) {
+    if (!Array.isArray(entry.exercises)) continue;
+    for (const ex of entry.exercises) {
+      if (!ex.name) continue;
+      const key = normalizeExerciseName(ex.name);
+      freq.set(key, (freq.get(key) || 0) + 1);
+    }
+  }
+
+  // Sort EXERCISE_DB by frequency descending, take top 8
+  return EXERCISE_DB
+    .map((e) => ({ ...e, source: "db", _freq: freq.get(normalizeExerciseName(e.name)) || 0 }))
+    .sort((a, b) => b._freq - a._freq)
+    .slice(0, 8)
+    .map(({ _freq, ...rest }) => rest);
+}
+
+function renderSearchResults(results, query) {
+  const container = document.querySelector("#search-results");
+  if (!container) return;
+
+  const typeLabel = { weight: "웨이트", bodyweight: "맨몸", time: "시간" };
+
+  let html = "";
+
+  if (!query || !query.trim()) {
+    // Show past + popular sections
+    const past = getPastExercises().slice(0, 4);
+    if (past.length > 0) {
+      html += '<p class="search-section-label">최근 운동</p>';
+      for (const ex of past) {
+        html += buildResultItem(ex, typeLabel);
+      }
+    }
+    const popular = getPopularExercises().filter(
+      (e) => !past.some((p) => normalizeExerciseName(p.name) === normalizeExerciseName(e.name))
+    ).slice(0, 4);
+    if (popular.length > 0) {
+      html += '<p class="search-section-label">인기 운동</p>';
+      for (const ex of popular) {
+        html += buildResultItem(ex, typeLabel);
+      }
+    }
+    if (!html) {
+      // No history at all – show first 8 from DB
+      html += '<p class="search-section-label">추천 운동</p>';
+      for (const ex of EXERCISE_DB.slice(0, 8)) {
+        html += buildResultItem({ ...ex, source: "db" }, typeLabel);
+      }
+    }
+  } else {
+    for (const ex of results) {
+      html += buildResultItem(ex, typeLabel);
+    }
+    if (results.length === 0) {
+      html += '<p class="search-no-result">검색 결과가 없습니다</p>';
+    }
+  }
+
+  html += '<button class="search-result-item manual-add" type="button" data-manual="1"><span class="result-name">✏️ 수기로 추가</span></button>';
+
+  container.innerHTML = html;
+  container.classList.remove("hidden");
+}
+
+function buildResultItem(ex, typeLabel) {
+  const sourceTag = ex.source === "history"
+    ? '<span class="result-source">최근</span>'
+    : "";
+  const metaParts = [];
+  if (ex.category) metaParts.push(ex.category);
+  if (ex.type) metaParts.push(typeLabel[ex.type] || ex.type);
+  if (ex.sets) metaParts.push(`${ex.sets}세트`);
+  const meta = metaParts.join(" · ");
+  return `<button class="search-result-item" type="button"
+    data-name="${ex.name.replace(/"/g, "&quot;")}"
+    data-type="${ex.type || "weight"}"
+    data-sets="${ex.sets || 3}"
+    data-rest="${ex.rest || 60}">
+    <div class="result-info">
+      <span class="result-name">${ex.name}</span>
+      ${meta ? `<span class="result-meta">${meta}</span>` : ""}
+    </div>
+    ${sourceTag}
+  </button>`;
+}
+
+function showExerciseForm(prefill) {
+  const wrap = document.querySelector("#exercise-search-wrap");
+  const form = document.querySelector("#exercise-form");
+  const titleEl = document.querySelector("#add-form-title");
+  const nameEl = document.querySelector("#exercise-name");
+  const setsEl = document.querySelector("#exercise-sets");
+  const restEl = document.querySelector("#exercise-rest");
+  const toggle = document.querySelector("#exercise-type-toggle");
+
+  if (wrap) wrap.classList.add("hidden");
+  if (form) form.classList.remove("hidden");
+
+  if (prefill) {
+    if (titleEl) titleEl.textContent = prefill.name || "운동 추가";
+    if (nameEl) nameEl.value = prefill.name || "";
+    if (setsEl) setsEl.value = prefill.sets || 3;
+    if (restEl) restEl.value = String(prefill.rest || 60);
+
+    const type = prefill.type || "weight";
+    selectedExerciseType = type;
+    if (toggle) {
+      toggle.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
+      const btn = toggle.querySelector(`[data-type="${type}"]`);
+      if (btn) btn.classList.add("active");
+    }
+  } else {
+    if (titleEl) titleEl.textContent = "운동 추가";
+    if (nameEl) nameEl.value = "";
+    if (setsEl) setsEl.value = "";
+    if (restEl) restEl.value = "60";
+    selectedExerciseType = "weight";
+    if (toggle) {
+      toggle.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
+      const weightBtn = toggle.querySelector('[data-type="weight"]');
+      if (weightBtn) weightBtn.classList.add("active");
+    }
+  }
+
+  if (nameEl) nameEl.focus();
+}
+
+function hideExerciseForm() {
+  const wrap = document.querySelector("#exercise-search-wrap");
+  const form = document.querySelector("#exercise-form");
+  const searchInput = document.querySelector("#exercise-search");
+  const results = document.querySelector("#search-results");
+
+  if (form) form.classList.add("hidden");
+  if (wrap) wrap.classList.remove("hidden");
+  if (results) results.classList.add("hidden");
+  if (searchInput) {
+    searchInput.value = "";
+    searchInput.focus();
+  }
+}
+
+// ──────────────────────────────────────────────────────────
 // 맞춤 운동 추천 데이터 (근거 기반)
 // Sources: ACSM, WHO, NSCA, PubMed 논문
 // ──────────────────────────────────────────────────────────
@@ -755,6 +1011,62 @@ if (exerciseTypeToggle) {
   });
 }
 
+// ── 운동 검색 핸들러 ──
+(function initExerciseSearch() {
+  const searchInput = document.querySelector("#exercise-search");
+  const resultsEl = document.querySelector("#search-results");
+  const cancelBtn = document.querySelector("#add-form-cancel");
+
+  if (!searchInput || !resultsEl) return;
+
+  let debounceTimer = null;
+
+  searchInput.addEventListener("focus", () => {
+    const q = searchInput.value.trim();
+    const results = q ? searchExercises(q) : [];
+    renderSearchResults(results, q);
+  });
+
+  searchInput.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const q = searchInput.value.trim();
+      const results = q ? searchExercises(q) : [];
+      renderSearchResults(results, q);
+    }, 150);
+  });
+
+  resultsEl.addEventListener("click", (e) => {
+    const item = e.target.closest(".search-result-item");
+    if (!item) return;
+
+    if (item.dataset.manual) {
+      showExerciseForm(null);
+      return;
+    }
+
+    const name = item.dataset.name;
+    const type = item.dataset.type || "weight";
+    const sets = Number(item.dataset.sets) || 3;
+    const rest = Number(item.dataset.rest) || 60;
+    showExerciseForm({ name, type, sets, rest });
+  });
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      hideExerciseForm();
+    });
+  }
+
+  // 외부 클릭 시 드롭다운 닫기
+  document.addEventListener("click", (e) => {
+    const wrap = document.querySelector("#exercise-search-wrap");
+    if (wrap && !wrap.contains(e.target)) {
+      if (resultsEl) resultsEl.classList.add("hidden");
+    }
+  });
+})();
+
 // ── 편집 모드 토글 핸들러 ──
 const toggleEditBtn = document.querySelector("#toggle-edit-mode");
 if (toggleEditBtn) {
@@ -988,17 +1300,7 @@ form.addEventListener("submit", (event) => {
   renderRoutine();
   renderSession();
 
-  form.reset();
-  // 유형 토글 초기화
-  selectedExerciseType = "weight";
-  if (exerciseTypeToggle) {
-    exerciseTypeToggle.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
-    const weightBtn = exerciseTypeToggle.querySelector('[data-type="weight"]');
-    if (weightBtn) weightBtn.classList.add("active");
-  }
-  // 쉬는 시간 선택 초기화
-  if (exerciseRestSelect) exerciseRestSelect.value = "60";
-  nameInput.focus();
+  hideExerciseForm();
 });
 
 exerciseList.addEventListener("click", (event) => {
