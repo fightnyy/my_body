@@ -650,6 +650,18 @@ const state = {
   hydrationUserScope: "",
 };
 
+function updateHeroGreeting() {
+  const el = document.querySelector("#hero-greeting");
+  if (!el) return;
+  const h = new Date().getHours();
+  if (h < 6) el.textContent = "새벽도 운동하는 당신 💪";
+  else if (h < 11) el.textContent = "좋은 아침이에요 ☀️";
+  else if (h < 14) el.textContent = "점심엔 몸도 충전 🏋️";
+  else if (h < 17) el.textContent = "오후도 힘차게 💪";
+  else if (h < 21) el.textContent = "퇴근 후 루틴 시간 🔥";
+  else el.textContent = "오늘도 해냈습니다 ✨";
+}
+
 loadDataForCurrentUser();
 renderAuthStatus();
 
@@ -658,6 +670,7 @@ renderSession();
 renderHistory();
 updateStreakBar();
 renderRecentRoutines();
+updateHeroGreeting();
 
 setupAuth();
 renderOnboarding();
@@ -810,6 +823,22 @@ if (logoutBtn) {
       await window.firebase.auth().signOut();
     } catch {
       sessionStatus.textContent = "로그아웃에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+    }
+  });
+}
+
+const authChipBtn = document.querySelector("#auth-chip-btn");
+const authDropdownEl = document.querySelector("#auth-dropdown");
+if (authChipBtn && authDropdownEl) {
+  authChipBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = authDropdownEl.classList.toggle("open");
+    authChipBtn.setAttribute("aria-expanded", String(isOpen));
+  });
+  document.addEventListener("click", (e) => {
+    if (!authChipBtn.contains(e.target) && !authDropdownEl.contains(e.target)) {
+      authDropdownEl.classList.remove("open");
+      authChipBtn.setAttribute("aria-expanded", "false");
     }
   });
 }
@@ -2217,6 +2246,11 @@ function renderAuthStatus() {
   if (logoutBtn) {
     logoutBtn.disabled = !state.user || !state.authReady;
   }
+
+  const chipLabel = document.querySelector("#auth-chip-label");
+  if (chipLabel) {
+    chipLabel.textContent = state.user ? state.user.name.split(" ")[0] : "게스트";
+  }
 }
 
 async function handleGoogleLogin() {
@@ -2487,9 +2521,9 @@ function updateStreakBar() {
       .map((e) => e.dateKey)
   ).size;
 
-  streakEl.textContent = `${streak}일 연속`;
-  weeklyEl.textContent = `이번 주 ${weeklyCount}/${weeklyGoal}회`;
-  totalEl.textContent = `총 ${total}회`;
+  streakEl.textContent = String(streak);
+  weeklyEl.textContent = `${weeklyCount}/${weeklyGoal}`;
+  totalEl.textContent = String(total);
 }
 
 function normalizeExerciseName(name) {

@@ -60,27 +60,44 @@
 
     <main class="app-shell">
       <header class="hero">
-        <div class="auth-bar">
-          <p id="auth-status" class="auth-status">게스트 모드</p>
-          <div class="auth-actions">
-            <button id="google-login" type="button">Google 로그인</button>
-            <button id="logout" type="button" disabled>로그아웃</button>
+        <div class="auth-chip-wrap">
+          <button class="auth-chip" id="auth-chip-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="계정 메뉴">
+            <span class="auth-chip-avatar" id="auth-chip-avatar" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            </span>
+            <span class="auth-chip-label" id="auth-chip-label">게스트</span>
+          </button>
+          <div class="auth-dropdown" id="auth-dropdown" role="menu" aria-hidden="true">
+            <p id="auth-feedback" class="auth-feedback hidden" aria-live="polite"></p>
+            <p id="auth-status" class="auth-dropdown-status">게스트 모드</p>
+            <button id="google-login" class="auth-dropdown-btn" type="button">Google 로그인</button>
+            <button id="logout" class="auth-dropdown-btn ghost-sm" type="button" disabled>로그아웃</button>
           </div>
         </div>
-        <p id="auth-feedback" class="auth-feedback hidden" aria-live="polite"></p>
-        <p class="eyebrow">Workout Tracker</p>
-        <h1>xerxise</h1>
-        <p class="subtitle">세트 카운트, 시작 타이머, 일자별 운동 기록까지 한 번에 관리합니다.</p>
-        <div class="streak-bar" id="streak-bar">
-          <div class="streak-item">
-            <span class="streak-icon">🔥</span>
-            <span id="streak-count">0일 연속</span>
-          </div>
-          <div class="streak-item">
-            <span id="weekly-progress">이번 주 0/3회</span>
-          </div>
-          <div class="streak-item">
-            <span id="total-workouts">총 0회</span>
+        <div class="hero-body">
+          <p class="hero-eyebrow">
+            <span class="hero-brand">xerxise</span>
+            <span class="hero-divider" aria-hidden="true"></span>
+            <span>Workout Tracker</span>
+          </p>
+          <p class="hero-greeting" id="hero-greeting">오늘도 해냅니다</p>
+          <div class="streak-board" id="streak-bar">
+            <div class="streak-primary">
+              <span class="streak-fire" aria-hidden="true">🔥</span>
+              <span class="streak-number" id="streak-count">0</span>
+              <span class="streak-unit">일 연속</span>
+            </div>
+            <div class="streak-secondaries">
+              <div class="streak-secondary-item">
+                <span class="streak-secondary-value" id="weekly-progress">0/3</span>
+                <span class="streak-secondary-label">이번 주</span>
+              </div>
+              <div class="streak-secondary-divider" aria-hidden="true"></div>
+              <div class="streak-secondary-item">
+                <span class="streak-secondary-value" id="total-workouts">0</span>
+                <span class="streak-secondary-label">총 운동</span>
+              </div>
+            </div>
           </div>
         </div>
       </header>
