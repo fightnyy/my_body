@@ -279,6 +279,10 @@
       </section>
 
       <section class="card session" data-tab="workout" aria-label="운동 진행">
+        <div id="pr-toast" class="pr-toast hidden">
+          <span class="pr-toast-icon">🏆</span>
+          <span id="pr-toast-text" class="pr-toast-text"></span>
+        </div>
         <div class="session-header">
           <h2>진행 보드</h2>
           <p id="session-status">루틴을 입력하고 시작하세요.</p>
@@ -343,11 +347,18 @@
               <button id="calendar-next" class="secondary" type="button" aria-label="다음 달">다음 달</button>
             </div>
           </div>
+          <div id="month-stats" class="month-stats"></div>
           <div class="calendar-weekdays" aria-hidden="true">
             <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
           </div>
           <div id="calendar-grid" class="calendar-grid"></div>
           <div id="calendar-detail" class="calendar-detail">날짜를 선택하면 해당 날짜 운동 기록이 표시됩니다.</div>
+        </div>
+        <div class="progress-chart-section" id="progress-chart-section">
+          <h3 class="progress-chart-title">운동별 추이</h3>
+          <div class="exercise-chips" id="exercise-chips"></div>
+          <canvas id="progress-chart" width="360" height="200"></canvas>
+          <div class="chart-stats" id="chart-stats"></div>
         </div>
       </section>
     </main>

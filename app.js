@@ -2,6 +2,7 @@ const STORAGE_KEYS = {
   routineBase: "xerxise-routine-v2",
   historyBase: "xerxise-history-v2",
   presetBase: "xerxise-preset-v1",
+  prBase: "xerxise-pr-v1",
   onboardingDismissed: "xerxise-onboarding-dismissed-v1",
   legacyRoutineV1: "xerxise-routine-v1",
   legacyHistoryV1: "xerxise-history-v1",
@@ -620,6 +621,7 @@ let editMode = false;
 const state = {
   routine: [],
   history: [],
+  prs: {},
   active: false,
   currentExerciseIdx: 0,
   previewExerciseId: "",
@@ -1205,6 +1207,13 @@ setActionBtn.addEventListener("click", () => {
   };
   if (noteVal) setEntry.note = noteVal;
   exercise.setsDetail.push(setEntry);
+
+  // PR 자동 감지
+  const prResult = checkAndUpdatePR(exercise.name, setEntry.weight, setEntry.reps, setEntry.time, exercise.exerciseType || "weight");
+  if (prResult) {
+    showPRToast(prResult);
+  }
+
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
@@ -1825,6 +1834,7 @@ function renderHistory() {
     empty.textContent = "아직 저장된 운동 기록이 없습니다.";
     historyListEl.appendChild(empty);
     renderCalendar();
+    renderProgressChart();
     return;
   }
 
@@ -1889,6 +1899,7 @@ function renderHistory() {
   });
 
   renderCalendar();
+  renderProgressChart();
 }
 
 function renderCalendar() {
@@ -1907,6 +1918,9 @@ function renderCalendar() {
     }
     grouped.get(entry.dateKey).push(entry);
   });
+
+  // 월간 통계 렌더링
+  renderMonthStats(cursor, grouped);
 
   calendarGridEl.innerHTML = "";
 
@@ -1927,6 +1941,18 @@ function renderCalendar() {
     button.type = "button";
     button.className = "calendar-day";
     button.dataset.date = dateKey;
+
+    // 히트맵: 총 완료 세트 수 기반 열강도
+    const totalSets = entries.reduce((sum, e) => sum + (e.totalCompletedSets || 0), 0);
+    if (totalSets >= 51) {
+      button.classList.add("cal-heat-4");
+    } else if (totalSets >= 31) {
+      button.classList.add("cal-heat-3");
+    } else if (totalSets >= 16) {
+      button.classList.add("cal-heat-2");
+    } else if (totalSets >= 1) {
+      button.classList.add("cal-heat-1");
+    }
 
     if (entries.length > 0) {
       button.classList.add("has-entry");
@@ -2217,6 +2243,7 @@ function loadDataForCurrentUser() {
   state.routine = loadRoutine();
   state.history = loadHistory();
   state.presets = loadUserPresets();
+  state.prs = loadPRs();
   state.currentExerciseIdx = 0;
   state.waitingForStart = false;
   clearReminderTimer();
@@ -3490,3 +3517,437 @@ document.addEventListener("touchend", () => {
   renderRoutine();
   renderSession();
 });
+
+// ─────────────────────────────────────────────
+// Feature: PR 자동 감지 (Personal Record)
+// ─────────────────────────────────────────────
+
+function getPRStorageKey() {
+  return `${STORAGE_KEYS.prBase}:${getUserStorageScope()}`;
+}
+
+function loadPRs() {
+  try {
+    const raw = localStorage.getItem(getPRStorageKey());
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+function savePRs(prs) {
+  localStorage.setItem(getPRStorageKey(), JSON.stringify(prs));
+}
+
+// 해당 운동의 역사적 세션 수를 반환 (PR 억제용)
+function countExerciseSessions(normalizedName) {
+  let count = 0;
+  state.history.forEach((entry) => {
+    if (Array.isArray(entry.exercises)) {
+      const found = entry.exercises.find(
+        (ex) => normalizeExerciseName(ex.name) === normalizedName
+      );
+      if (found && found.completedSets > 0) count += 1;
+    }
+  });
+  return count;
+}
+
+function checkAndUpdatePR(exerciseName, weight, reps, time, exerciseType) {
+  const key = normalizeExerciseName(exerciseName);
+  if (!key) return null;
+
+  // 2회 미만 기록이면 PR 감지 안 함
+  if (countExerciseSessions(key) < 2) return null;
+
+  if (!state.prs) state.prs = {};
+  const existing = state.prs[key] || {};
+  let newPR = null;
+
+  if (exerciseType === "bodyweight") {
+    const newReps = reps || 0;
+    if (newReps > 0 && newReps > (existing.maxReps || 0)) {
+      state.prs[key] = Object.assign({}, existing, {
+        maxReps: newReps,
+        date: formatDateKey(new Date()),
+      });
+      newPR = { type: "reps", name: exerciseName, reps: newReps };
+    }
+  } else if (exerciseType === "time") {
+    const newTime = time || 0;
+    if (newTime > 0 && newTime > (existing.maxTime || 0)) {
+      state.prs[key] = Object.assign({}, existing, {
+        maxTime: newTime,
+        date: formatDateKey(new Date()),
+      });
+      newPR = { type: "time", name: exerciseName, time: newTime };
+    }
+  } else {
+    // weight exercise: check maxWeight and maxVolume
+    const w = weight || 0;
+    const r = reps || 0;
+    const vol = w * r;
+    let updated = Object.assign({}, existing);
+    let isNew = false;
+
+    if (w > 0 && w > (existing.maxWeight || 0)) {
+      updated.maxWeight = w;
+      updated.maxWeightReps = r;
+      updated.date = formatDateKey(new Date());
+      isNew = true;
+      newPR = { type: "weight", name: exerciseName, weight: w, reps: r };
+    }
+    if (vol > 0 && vol > (existing.maxVolume || 0)) {
+      updated.maxVolume = vol;
+      updated.date = formatDateKey(new Date());
+      isNew = true;
+      if (!newPR) {
+        newPR = { type: "volume", name: exerciseName, weight: w, reps: r };
+      }
+    }
+    if (isNew) {
+      state.prs[key] = updated;
+    }
+  }
+
+  if (newPR) {
+    savePRs(state.prs);
+  }
+  return newPR;
+}
+
+let _prToastTimer = null;
+
+function showPRToast(prInfo) {
+  const toast = document.querySelector("#pr-toast");
+  const toastText = document.querySelector("#pr-toast-text");
+  if (!toast || !toastText) return;
+
+  let msg = prInfo.name;
+  if (prInfo.type === "reps") {
+    msg += ` ${prInfo.reps}회`;
+  } else if (prInfo.type === "time") {
+    msg += ` ${prInfo.time}초`;
+  } else {
+    if (prInfo.weight) msg += ` ${prInfo.weight}kg`;
+    if (prInfo.reps) msg += ` x ${prInfo.reps}회`;
+  }
+
+  toastText.textContent = `PR! ${msg}`;
+  toast.classList.remove("hidden");
+  // force reflow before adding visible
+  void toast.offsetWidth;
+  toast.classList.add("visible");
+
+  if (_prToastTimer) clearTimeout(_prToastTimer);
+  _prToastTimer = setTimeout(() => {
+    toast.classList.remove("visible");
+    setTimeout(() => toast.classList.add("hidden"), 350);
+  }, 2500);
+}
+
+// ─────────────────────────────────────────────
+// Feature: 월간 통계 스트립
+// ─────────────────────────────────────────────
+
+function renderMonthStats(cursor, grouped) {
+  const monthStatsEl = document.querySelector("#month-stats");
+  if (!monthStatsEl) return;
+
+  const year = cursor.getFullYear();
+  const month = cursor.getMonth();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  let workoutDays = 0;
+  let totalSets = 0;
+  for (let d = 1; d <= lastDate; d += 1) {
+    const dk = formatDateKey(new Date(year, month, d));
+    const entries = grouped.get(dk) || [];
+    if (entries.length > 0) workoutDays += 1;
+    entries.forEach((e) => { totalSets += e.totalCompletedSets || 0; });
+  }
+
+  // 연속 운동일 계산 (오늘 기준 이전으로)
+  let streak = 0;
+  const today = new Date();
+  let checkDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  while (true) {
+    const dk = formatDateKey(checkDate);
+    const entries = grouped.get(dk) || [];
+    if (entries.length > 0) {
+      streak += 1;
+      checkDate = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  monthStatsEl.innerHTML = "";
+
+  function makeStat(label, value) {
+    const span = document.createElement("span");
+    span.innerHTML = `${label}: <span class="month-stat-value">${value}</span>`;
+    return span;
+  }
+
+  monthStatsEl.appendChild(makeStat("이번 달", `${workoutDays}회 운동`));
+  monthStatsEl.appendChild(makeStat("총 세트", `${totalSets}세트`));
+  monthStatsEl.appendChild(makeStat("연속", `${streak}일`));
+}
+
+// ─────────────────────────────────────────────
+// Feature: 운동별 성장 차트
+// ─────────────────────────────────────────────
+
+let _activeChartExercise = "";
+
+function renderProgressChart() {
+  const chipsEl = document.querySelector("#exercise-chips");
+  const chartCanvas = document.querySelector("#progress-chart");
+  const chartStatsEl = document.querySelector("#chart-stats");
+  if (!chipsEl || !chartCanvas || !chartStatsEl) return;
+
+  // 고유 운동 이름 수집
+  const nameMap = new Map(); // normalized -> display name
+  state.history.forEach((entry) => {
+    if (!Array.isArray(entry.exercises)) return;
+    entry.exercises.forEach((ex) => {
+      if (ex.completedSets > 0) {
+        const key = normalizeExerciseName(ex.name);
+        if (key && !nameMap.has(key)) {
+          nameMap.set(key, ex.name);
+        }
+      }
+    });
+  });
+
+  chipsEl.innerHTML = "";
+
+  if (nameMap.size === 0) {
+    chartCanvas.style.display = "none";
+    chartStatsEl.innerHTML = "";
+    return;
+  }
+
+  // 유효한 active 운동 확인
+  if (!_activeChartExercise || !nameMap.has(normalizeExerciseName(_activeChartExercise))) {
+    _activeChartExercise = nameMap.values().next().value;
+  }
+
+  nameMap.forEach((displayName) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "exercise-chip";
+    chip.textContent = displayName;
+    if (displayName === _activeChartExercise) chip.classList.add("active");
+    chip.addEventListener("click", () => {
+      _activeChartExercise = displayName;
+      chipsEl.querySelectorAll(".exercise-chip").forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+      drawExerciseChart(displayName);
+    });
+    chipsEl.appendChild(chip);
+  });
+
+  drawExerciseChart(_activeChartExercise);
+}
+
+function drawExerciseChart(exerciseName) {
+  const chartCanvas = document.querySelector("#progress-chart");
+  const chartStatsEl = document.querySelector("#chart-stats");
+  if (!chartCanvas || !chartStatsEl) return;
+
+  const key = normalizeExerciseName(exerciseName);
+
+  // 데이터 수집: 날짜별 최고값
+  const dataPoints = []; // { dateKey, value }
+
+  // 운동 타입 판별
+  let exerciseType = "weight";
+  outer: for (let i = state.history.length - 1; i >= 0; i--) {
+    const entry = state.history[i];
+    if (!Array.isArray(entry.exercises)) continue;
+    for (const ex of entry.exercises) {
+      if (normalizeExerciseName(ex.name) === key && Array.isArray(ex.setsDetail) && ex.setsDetail.length > 0) {
+        const s = ex.setsDetail[0];
+        if (s.time) { exerciseType = "time"; }
+        else if (!s.weight && s.reps) { exerciseType = "bodyweight"; }
+        else { exerciseType = "weight"; }
+        break outer;
+      }
+    }
+  }
+
+  // history는 내림차순(최신이 앞)이므로 역순으로 처리
+  const sortedHistory = state.history.slice().sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+
+  sortedHistory.forEach((entry) => {
+    if (!Array.isArray(entry.exercises)) return;
+    const ex = entry.exercises.find((e) => normalizeExerciseName(e.name) === key);
+    if (!ex || !Array.isArray(ex.setsDetail) || ex.setsDetail.length === 0) return;
+
+    let maxVal = 0;
+    ex.setsDetail.forEach((s) => {
+      if (exerciseType === "time") {
+        maxVal = Math.max(maxVal, s.time || 0);
+      } else if (exerciseType === "bodyweight") {
+        maxVal = Math.max(maxVal, s.reps || 0);
+      } else {
+        maxVal = Math.max(maxVal, s.weight || 0);
+      }
+    });
+
+    if (maxVal > 0) {
+      dataPoints.push({ dateKey: entry.dateKey, value: maxVal });
+    }
+  });
+
+  chartStatsEl.innerHTML = "";
+
+  if (dataPoints.length < 2) {
+    // 데이터 부족 메시지
+    chartCanvas.style.display = "none";
+    const msg = document.createElement("p");
+    msg.className = "chart-empty-msg";
+    msg.textContent = "기록이 부족합니다 (최소 2회 이상)";
+    chartStatsEl.appendChild(msg);
+    return;
+  }
+
+  chartCanvas.style.display = "block";
+
+  // 캔버스 반응형 너비 설정
+  const container = chartCanvas.parentElement;
+  const containerWidth = container ? container.clientWidth - 32 : 360;
+  const W = Math.max(280, containerWidth);
+  const H = 200;
+  chartCanvas.width = W;
+  chartCanvas.height = H;
+
+  const ctx = chartCanvas.getContext("2d");
+  ctx.clearRect(0, 0, W, H);
+
+  const PAD_L = 44;
+  const PAD_R = 12;
+  const PAD_T = 16;
+  const PAD_B = 28;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
+
+  const values = dataPoints.map((d) => d.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const valRange = maxVal - minVal || 1;
+
+  function xPos(i) {
+    return PAD_L + (i / (dataPoints.length - 1)) * chartW;
+  }
+  function yPos(v) {
+    return PAD_T + chartH - ((v - minVal) / valRange) * chartH;
+  }
+
+  // 그리드라인
+  ctx.strokeStyle = "rgba(93,116,161,0.15)";
+  ctx.lineWidth = 1;
+  const gridLines = 4;
+  for (let g = 0; g <= gridLines; g++) {
+    const y = PAD_T + (g / gridLines) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, y);
+    ctx.lineTo(W - PAD_R, y);
+    ctx.stroke();
+
+    // Y축 레이블
+    const labelVal = maxVal - (g / gridLines) * valRange;
+    ctx.fillStyle = "rgba(96,112,138,0.9)";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(Math.round(labelVal), PAD_L - 4, y + 3.5);
+  }
+
+  // 단위 레이블
+  let unit = "kg";
+  if (exerciseType === "bodyweight") unit = "회";
+  else if (exerciseType === "time") unit = "초";
+  ctx.fillStyle = "rgba(96,112,138,0.8)";
+  ctx.font = "9px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(unit, 2, PAD_T + 4);
+
+  // X축 날짜 레이블 (최대 5개)
+  const labelInterval = Math.ceil(dataPoints.length / 5);
+  ctx.fillStyle = "rgba(96,112,138,0.9)";
+  ctx.font = "9px sans-serif";
+  ctx.textAlign = "center";
+  dataPoints.forEach((d, i) => {
+    if (i % labelInterval === 0 || i === dataPoints.length - 1) {
+      const x = xPos(i);
+      const parts = d.dateKey.split("-");
+      const label = parts.length >= 3 ? `${parts[1]}/${parts[2]}` : d.dateKey;
+      ctx.fillText(label, x, H - 6);
+    }
+  });
+
+  // 그라디언트 채우기
+  const grad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + chartH);
+  grad.addColorStop(0, "rgba(0,86,214,0.18)");
+  grad.addColorStop(1, "rgba(0,86,214,0)");
+  ctx.beginPath();
+  dataPoints.forEach((d, i) => {
+    const x = xPos(i);
+    const y = yPos(d.value);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.lineTo(xPos(dataPoints.length - 1), PAD_T + chartH);
+  ctx.lineTo(xPos(0), PAD_T + chartH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // 선
+  ctx.beginPath();
+  ctx.strokeStyle = "#0056d6";
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  dataPoints.forEach((d, i) => {
+    const x = xPos(i);
+    const y = yPos(d.value);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 점
+  dataPoints.forEach((d, i) => {
+    const x = xPos(i);
+    const y = yPos(d.value);
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = "#0056d6";
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // 통계
+  const maxData = Math.max(...values);
+  const latestData = values[values.length - 1];
+  const unitLabel = exerciseType === "time" ? "초" : exerciseType === "bodyweight" ? "회" : "kg";
+
+  function makeStat(label, value) {
+    const div = document.createElement("div");
+    div.className = "chart-stat";
+    div.innerHTML = `<span class="stat-label">${label}</span><span class="stat-value">${value}${unitLabel}</span>`;
+    return div;
+  }
+
+  chartStatsEl.appendChild(makeStat("최고", maxData));
+  chartStatsEl.appendChild(makeStat("최근", latestData));
+  const countDiv = document.createElement("div");
+  countDiv.className = "chart-stat";
+  countDiv.innerHTML = `<span class="stat-label">기록 수</span><span class="stat-value">${dataPoints.length}회</span>`;
+  chartStatsEl.appendChild(countDiv);
+}
