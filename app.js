@@ -72,10 +72,16 @@ const DEFAULT_UPPER_ROUTINE_TEMPLATE = [
 
 const DEFAULT_LOWER_ROUTINE_TEMPLATE = [
   {
-    name: "크런치 + 플랭크",
+    name: "크런치",
     targetSets: 3,
     exerciseType: "bodyweight",
-    description: "크런치로 복부 수축을 만든 뒤 플랭크로 코어 안정성을 유지하는 슈퍼세트입니다.",
+    description: "등을 바닥에 대고 상체를 말아 올려 복부 상단을 집중 수축합니다.",
+  },
+  {
+    name: "플랭크",
+    targetSets: 3,
+    exerciseType: "bodyweight",
+    description: "팔꿈치와 발끝으로 몸을 지탱하며 코어 안정성을 유지합니다.",
   },
   {
     name: "레그 프레스",
