@@ -306,20 +306,14 @@
           <p id="session-status">루틴을 입력하고 시작하세요.</p>
         </div>
 
-        <div class="meter-grid">
-          <article class="meter">
-            <p class="label">현재 운동</p>
-            <p id="current-exercise" class="value">-</p>
-          </article>
-          <article class="meter">
-            <p class="label">현재 세트</p>
-            <p id="current-set" class="value">0 / 0</p>
-            <div id="set-dots" class="set-dots"></div>
-          </article>
-          <article class="meter danger">
-            <p class="label">세트 시작 타이머</p>
-            <p id="countdown" class="value">-</p>
-          </article>
+        <div class="session-mini-board">
+          <div class="session-mini-row">
+            <span id="current-exercise" class="session-mini-name">-</span>
+            <span id="current-set" class="session-mini-sets">0 / 0 세트</span>
+          </div>
+          <div class="session-mini-divider"></div>
+          <p class="session-mini-timer">세트 시작 타이머: <span id="countdown">-</span></p>
+          <div id="set-dots" class="set-dots" style="display:none;"></div>
         </div>
         <div class="session-progress-rail" id="session-progress-rail" style="display:none;">
           <div class="session-progress-fill" id="session-progress-fill"></div>
@@ -330,13 +324,13 @@
           <p id="exercise-description" class="guide-text">운동을 선택하면 설명이 표시됩니다.</p>
         </article>
 
+        <input id="set-note" type="text" maxlength="50" placeholder="메모 (선택)" class="set-note-input hidden" />
         <div class="button-row">
           <button id="start-session" class="primary" type="button">운동 시작</button>
           <div class="set-action-wrap">
             <input id="weight-input" type="number" min="0" max="999" step="0.5" placeholder="kg" class="weight-input hidden" inputmode="decimal" />
             <input id="reps-input" type="number" min="1" max="999" placeholder="횟수" class="reps-input hidden" inputmode="numeric" />
             <input id="time-input" type="number" min="1" max="9999" placeholder="초" class="time-input hidden" inputmode="numeric" />
-            <input id="set-note" type="text" maxlength="50" placeholder="메모 (선택)" class="set-note-input hidden" />
             <button id="set-action" class="accent" type="button" disabled>세트 시작</button>
           </div>
           <button id="end-session" class="ghost" type="button" disabled>종료</button>

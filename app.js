@@ -2220,11 +2220,11 @@ function renderSession() {
 
     if (preview) {
       currentExerciseEl.textContent = preview.name;
-      currentSetEl.textContent = `0 / ${preview.targetSets}`;
+      currentSetEl.textContent = `0 / ${preview.targetSets} 세트`;
       renderExerciseDescription(preview.description);
     } else {
       currentExerciseEl.textContent = "-";
-      currentSetEl.textContent = "0 / 0";
+      currentSetEl.textContent = "0 / 0 세트";
       renderExerciseDescription("운동을 선택하면 설명이 표시됩니다.");
     }
 
@@ -2246,7 +2246,7 @@ function renderSession() {
   }
 
   currentExerciseEl.textContent = currentActive.name;
-  currentSetEl.textContent = `${Math.min(currentActive.completedSets + 1, currentActive.targetSets)} / ${currentActive.targetSets}`;
+  currentSetEl.textContent = `${Math.min(currentActive.completedSets + 1, currentActive.targetSets)} / ${currentActive.targetSets} 세트`;
   renderExerciseDescription(currentActive.description);
 
   // Set dots
