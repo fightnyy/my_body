@@ -124,15 +124,20 @@ const DEFAULT_LOWER_ROUTINE_TEMPLATE = [
 const ALL_DEFAULT_ROUTINES = [...DEFAULT_UPPER_ROUTINE_TEMPLATE, ...DEFAULT_LOWER_ROUTINE_TEMPLATE];
 
 // ──────────────────────────────────────────────────────────
+function getExerciseGifUrl(name) {
+  const filename = name.replace(/ /g, '_').replace(/\//g, '_');
+  return `gifs/${filename}.gif`;
+}
+
 // 운동 데이터베이스 (검색용)
 // ──────────────────────────────────────────────────────────
 const EXERCISE_DB = [
   // 가슴
-  { name: "바벨 벤치프레스", type: "weight", sets: 4, rest: 90, category: "가슴" },
+  { name: "바벨 벤치프레스", type: "weight", sets: 4, rest: 90, category: "가슴", aliases: ["벤치프레스", "가슴운동"] },
   { name: "덤벨 벤치프레스", type: "weight", sets: 4, rest: 90, category: "가슴" },
   { name: "인클라인 벤치프레스", type: "weight", sets: 4, rest: 90, category: "가슴" },
   { name: "케이블 크로스오버", type: "weight", sets: 3, rest: 60, category: "가슴" },
-  { name: "딥스", type: "bodyweight", sets: 3, rest: 90, category: "가슴" },
+  { name: "딥스", type: "bodyweight", sets: 3, rest: 90, category: "가슴", aliases: ["평행봉 딥스"] },
   { name: "펙덱 플라이", type: "weight", sets: 3, rest: 60, category: "가슴" },
   { name: "체스트 프레스 머신", type: "weight", sets: 3, rest: 60, category: "가슴" },
   // 등
@@ -140,8 +145,8 @@ const EXERCISE_DB = [
   { name: "바벨 로우", type: "weight", sets: 4, rest: 90, category: "등" },
   { name: "덤벨 로우", type: "weight", sets: 4, rest: 90, category: "등" },
   { name: "시티드 케이블 로우", type: "weight", sets: 4, rest: 90, category: "등" },
-  { name: "풀업", type: "bodyweight", sets: 3, rest: 120, category: "등" },
-  { name: "친업", type: "bodyweight", sets: 3, rest: 120, category: "등" },
+  { name: "풀업", type: "bodyweight", sets: 3, rest: 120, category: "등", aliases: ["턱걸이", "철봉"] },
+  { name: "친업", type: "bodyweight", sets: 3, rest: 120, category: "등", aliases: ["언더그립 턱걸이"] },
   { name: "티바 로우", type: "weight", sets: 4, rest: 90, category: "등" },
   { name: "페이스풀", type: "weight", sets: 3, rest: 60, category: "등" },
   // 어깨
@@ -152,13 +157,13 @@ const EXERCISE_DB = [
   { name: "아놀드 프레스", type: "weight", sets: 3, rest: 90, category: "어깨" },
   { name: "덤벨 숄더 프레스", type: "weight", sets: 4, rest: 90, category: "어깨" },
   // 하체
-  { name: "바벨 스쿼트", type: "weight", sets: 4, rest: 120, category: "하체" },
+  { name: "바벨 스쿼트", type: "weight", sets: 4, rest: 120, category: "하체", aliases: ["스쿼트", "앉았다일어서기"] },
   { name: "레그프레스", type: "weight", sets: 4, rest: 90, category: "하체" },
   { name: "루마니안 데드리프트", type: "weight", sets: 4, rest: 90, category: "하체" },
   { name: "레그 익스텐션", type: "weight", sets: 3, rest: 60, category: "하체" },
   { name: "레그 컬", type: "weight", sets: 4, rest: 60, category: "하체" },
   { name: "힙 쓰러스트", type: "weight", sets: 4, rest: 90, category: "하체" },
-  { name: "런지", type: "weight", sets: 3, rest: 60, category: "하체" },
+  { name: "런지", type: "weight", sets: 3, rest: 60, category: "하체", aliases: ["앞으로 런지", "포워드 런지"] },
   { name: "카프 레이즈", type: "weight", sets: 4, rest: 60, category: "하체" },
   { name: "불가리안 스플릿 스쿼트", type: "weight", sets: 3, rest: 90, category: "하체" },
   // 팔
@@ -176,7 +181,7 @@ const EXERCISE_DB = [
   { name: "러시안 트위스트", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
   { name: "사이드 플랭크", type: "time", sets: 3, rest: 60, category: "코어" },
   // 전신
-  { name: "데드리프트", type: "weight", sets: 4, rest: 180, category: "전신" },
+  { name: "데드리프트", type: "weight", sets: 4, rest: 180, category: "전신", aliases: ["컨벤셔널 데드리프트"] },
   { name: "클린 앤 프레스", type: "weight", sets: 4, rest: 120, category: "전신" },
   { name: "버피", type: "bodyweight", sets: 3, rest: 90, category: "전신" },
   // 기본 루틴 운동들 (DEFAULT_UPPER / DEFAULT_LOWER 포함)
@@ -190,6 +195,60 @@ const EXERCISE_DB = [
   { name: "스미스 머신 스쿼트", type: "weight", sets: 7, rest: 90, category: "하체" },
   { name: "시티드 힙 어브덕션", type: "weight", sets: 2, rest: 60, category: "하체" },
   { name: "시티드 힙 어덕션", type: "weight", sets: 2, rest: 60, category: "하체" },
+  // 가슴 추가
+  { name: "인클라인 덤벨 프레스", type: "weight", sets: 4, rest: 90, category: "가슴" },
+  { name: "디클라인 벤치프레스", type: "weight", sets: 4, rest: 90, category: "가슴" },
+  { name: "머신 플라이", type: "weight", sets: 3, rest: 60, category: "가슴" },
+  // 등 추가
+  { name: "시티드 로우 머신", type: "weight", sets: 4, rest: 90, category: "등" },
+  { name: "원암 덤벨 로우", type: "weight", sets: 4, rest: 90, category: "등" },
+  { name: "리버스 그립 랫풀다운", type: "weight", sets: 3, rest: 90, category: "등" },
+  { name: "스트레이트 암 풀다운", type: "weight", sets: 3, rest: 60, category: "등" },
+  // 어깨 추가
+  { name: "머신 숄더 프레스", type: "weight", sets: 4, rest: 90, category: "어깨" },
+  { name: "업라이트 로우", type: "weight", sets: 3, rest: 60, category: "어깨" },
+  { name: "케이블 페이스 풀", type: "weight", sets: 3, rest: 60, category: "어깨" },
+  // 하체 추가
+  { name: "고블릿 스쿼트", type: "weight", sets: 3, rest: 90, category: "하체" },
+  { name: "프론트 스쿼트", type: "weight", sets: 4, rest: 120, category: "하체" },
+  { name: "스모 데드리프트", type: "weight", sets: 4, rest: 120, category: "하체" },
+  { name: "케이블 힙 어브덕션", type: "weight", sets: 3, rest: 60, category: "하체" },
+  { name: "글루트 킥백 머신", type: "weight", sets: 3, rest: 60, category: "하체" },
+  { name: "워킹 런지", type: "weight", sets: 3, rest: 60, category: "하체" },
+  { name: "시시 스쿼트", type: "bodyweight", sets: 3, rest: 60, category: "하체" },
+  { name: "스텝업", type: "weight", sets: 3, rest: 60, category: "하체" },
+  // 팔 추가
+  { name: "케이블 푸쉬다운", type: "weight", sets: 3, rest: 60, category: "팔" },
+  { name: "이지바 컬", type: "weight", sets: 3, rest: 60, category: "팔" },
+  { name: "컨센트레이션 컬", type: "weight", sets: 3, rest: 60, category: "팔" },
+  { name: "클로즈그립 벤치프레스", type: "weight", sets: 3, rest: 90, category: "팔" },
+  { name: "리스트 컬", type: "weight", sets: 3, rest: 60, category: "팔" },
+  // 코어 추가
+  { name: "윗몸일으키기", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
+  { name: "바이시클 크런치", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
+  { name: "마운틴 클라이머", type: "time", sets: 3, rest: 60, category: "코어" },
+  { name: "행잉 레그 레이즈", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
+  { name: "케이블 크런치", type: "weight", sets: 3, rest: 60, category: "코어" },
+  { name: "데드 버그", type: "bodyweight", sets: 3, rest: 60, category: "코어" },
+  // 전신 추가
+  { name: "케틀벨 스윙", type: "weight", sets: 4, rest: 90, category: "전신" },
+  { name: "쓰러스터", type: "weight", sets: 3, rest: 90, category: "전신" },
+  { name: "맨몸 스쿼트", type: "bodyweight", sets: 3, rest: 60, category: "전신" },
+  { name: "점프 스쿼트", type: "bodyweight", sets: 3, rest: 60, category: "전신" },
+  // 유산소/맨몸 추가
+  { name: "점핑잭", type: "time", sets: 3, rest: 30, category: "전신" },
+  { name: "하이니", type: "time", sets: 3, rest: 30, category: "전신" },
+  { name: "박스점프", type: "bodyweight", sets: 3, rest: 60, category: "전신" },
+  { name: "푸쉬업", type: "bodyweight", sets: 3, rest: 60, category: "가슴", aliases: ["팔굽혀펴기"] },
+  { name: "인클라인 푸쉬업", type: "bodyweight", sets: 3, rest: 60, category: "가슴", aliases: ["인클라인 팔굽혀펴기"] },
+  // 스트레칭/재활
+  { name: "밴드 풀 어파트", type: "weight", sets: 3, rest: 30, category: "어깨" },
+  { name: "힙 플렉서 스트레치", type: "time", sets: 2, rest: 30, category: "하체" },
+  { name: "폼롤러 상체", type: "time", sets: 2, rest: 30, category: "전신" },
+  { name: "폼롤러 하체", type: "time", sets: 2, rest: 30, category: "전신" },
+  { name: "월 슬라이드", type: "bodyweight", sets: 3, rest: 30, category: "어깨" },
+  { name: "인버티드 로우", type: "bodyweight", sets: 3, rest: 60, category: "등" },
+  { name: "닐링 힙 쓰러스트", type: "bodyweight", sets: 3, rest: 60, category: "하체" },
 ];
 
 function getPastExercises() {
@@ -226,7 +285,10 @@ function searchExercises(query) {
   const dbMatches = EXERCISE_DB
     .filter((e) => {
       const normKey = normalizeExerciseName(e.name);
-      return !pastNames.has(normKey) && e.name.toLowerCase().includes(q);
+      if (pastNames.has(normKey)) return false;
+      if (e.name.toLowerCase().includes(q)) return true;
+      if (e.aliases && e.aliases.some((a) => a.toLowerCase().includes(q))) return true;
+      return false;
     })
     .map((e) => ({ ...e, source: "db" }));
 
@@ -1495,6 +1557,99 @@ exerciseList.addEventListener("click", (event) => {
   renderSession();
 });
 
+// Session sets list inline edit handling
+document.querySelector(".card.session").addEventListener("click", (e) => {
+  const target = e.target;
+
+  // Save button
+  if (target.classList.contains("session-set-save-btn") || target.closest(".session-set-save-btn")) {
+    const btn = target.classList.contains("session-set-save-btn") ? target : target.closest(".session-set-save-btn");
+    const row = btn.closest(".session-set-row");
+    if (!row || !state.active) return;
+    const exId = row.dataset.exerciseId;
+    const si = parseInt(row.dataset.setIndex, 10);
+    const exercise = state.routine.find((ex) => ex.id === exId);
+    if (!exercise || !exercise.setsDetail[si]) return;
+    const s = exercise.setsDetail[si];
+    if (exercise.exerciseType === "time") {
+      const timeVal = parseInt(row.querySelector(".set-edit-time")?.value || "0", 10);
+      if (timeVal > 0) s.time = timeVal;
+    } else {
+      const weightVal = row.querySelector(".set-edit-weight")?.value?.trim();
+      const repsVal = parseInt(row.querySelector(".set-edit-reps")?.value || "0", 10);
+      s.weight = weightVal ? parseFloat(weightVal) : 0;
+      s.reps = repsVal || 0;
+    }
+    saveRoutine(state.routine);
+    updateActiveSessionHistory();
+    renderRoutine();
+    renderSession();
+    return;
+  }
+
+  // Delete button
+  if (target.classList.contains("session-set-delete-btn") || target.closest(".session-set-delete-btn")) {
+    const btn = target.classList.contains("session-set-delete-btn") ? target : target.closest(".session-set-delete-btn");
+    const row = btn.closest(".session-set-row");
+    if (!row || !state.active) return;
+    const exId = row.dataset.exerciseId;
+    const si = parseInt(row.dataset.setIndex, 10);
+    const exercise = state.routine.find((ex) => ex.id === exId);
+    if (!exercise) return;
+    if (!window.confirm(`${si + 1}세트 기록을 삭제할까요?`)) return;
+    exercise.setsDetail.splice(si, 1);
+    exercise.completedSets = Math.max(0, exercise.completedSets - 1);
+    saveRoutine(state.routine);
+    updateActiveSessionHistory();
+    renderRoutine();
+    renderSession();
+    return;
+  }
+
+  // Row tap — toggle editing
+  const sessionRow = target.closest(".session-set-row");
+  if (sessionRow instanceof HTMLElement) {
+    if (!state.active) return;
+    // Close any other open edit rows first
+    document.querySelectorAll(".session-set-row.editing").forEach((r) => {
+      if (r !== sessionRow) {
+        r.classList.remove("editing");
+        r.querySelector(".session-set-edit")?.remove();
+      }
+    });
+    sessionRow.classList.toggle("editing");
+    if (sessionRow.classList.contains("editing")) {
+      const exId = sessionRow.dataset.exerciseId;
+      const si = parseInt(sessionRow.dataset.setIndex, 10);
+      const exercise = state.routine.find((ex) => ex.id === exId);
+      if (!exercise || !exercise.setsDetail[si]) return;
+      const s = exercise.setsDetail[si];
+      const exType = exercise.exerciseType || "weight";
+      let editHTML = `<div class="session-set-edit">`;
+      if (exType === "time") {
+        editHTML += `<input class="set-edit-time" type="number" inputmode="numeric" min="1" value="${s.time || ""}" placeholder="초">`;
+        editHTML += `<span class="set-edit-unit">초</span>`;
+      } else {
+        if (exType === "weight") {
+          editHTML += `<input class="set-edit-weight" type="number" inputmode="decimal" min="0" step="0.5" value="${s.weight || ""}" placeholder="kg">`;
+          editHTML += `<span class="set-edit-unit">kg ×</span>`;
+        }
+        editHTML += `<input class="set-edit-reps" type="number" inputmode="numeric" min="0" value="${s.reps || ""}" placeholder="회">`;
+        editHTML += `<span class="set-edit-unit">회</span>`;
+      }
+      editHTML += `<button class="session-set-save-btn" type="button">저장</button>`;
+      editHTML += `<button class="session-set-delete-btn" type="button">삭제</button>`;
+      editHTML += `</div>`;
+      sessionRow.querySelector(".session-set-edit")?.remove();
+      sessionRow.insertAdjacentHTML("beforeend", editHTML);
+      sessionRow.querySelector(".set-edit-weight, .set-edit-time, .set-edit-reps")?.focus();
+    } else {
+      sessionRow.querySelector(".session-set-edit")?.remove();
+    }
+    return;
+  }
+});
+
 loadUpperPresetBtn.addEventListener("click", () => {
   applyPreset(DEFAULT_UPPER_ROUTINE_TEMPLATE, "상체");
 });
@@ -2146,29 +2301,6 @@ function renderRoutine() {
     item.querySelector(".meta").textContent =
       `${exercise.targetSets}세트 · ${typeLabel} · 휴식 ${restLabel}`;
 
-    // Sets detail list below meta
-    const setsListEl = item.querySelector(".sets-detail-list");
-    if (setsListEl && exercise.setsDetail && exercise.setsDetail.length > 0) {
-      exercise.setsDetail.forEach((s, si) => {
-        const row = document.createElement("li");
-        row.className = "set-detail-row";
-        row.dataset.setIndex = si;
-        row.dataset.exerciseId = exercise.id;
-
-        const labelEl = document.createElement("span");
-        labelEl.className = "set-detail-label";
-        labelEl.textContent = `${si + 1}세트`;
-
-        const valueEl = document.createElement("span");
-        valueEl.className = "set-detail-value";
-        valueEl.textContent = formatSetDetail(s);
-
-        row.appendChild(labelEl);
-        row.appendChild(valueEl);
-        setsListEl.appendChild(row);
-      });
-    }
-
     // Set ring: conic-gradient progress
     const pct = exercise.targetSets > 0
       ? Math.round((exercise.completedSets / exercise.targetSets) * 100)
@@ -2221,7 +2353,7 @@ function renderSession() {
     if (preview) {
       currentExerciseEl.textContent = preview.name;
       currentSetEl.textContent = `0 / ${preview.targetSets} 세트`;
-      renderExerciseDescription(preview.description);
+      renderExerciseDescription(preview.description, preview.name);
     } else {
       currentExerciseEl.textContent = "-";
       currentSetEl.textContent = "0 / 0 세트";
@@ -2247,7 +2379,7 @@ function renderSession() {
 
   currentExerciseEl.textContent = currentActive.name;
   currentSetEl.textContent = `${Math.min(currentActive.completedSets + 1, currentActive.targetSets)} / ${currentActive.targetSets} 세트`;
-  renderExerciseDescription(currentActive.description);
+  renderExerciseDescription(currentActive.description, currentActive.name);
 
   // Set dots
   if (setDotsEl) {
@@ -2282,13 +2414,47 @@ function renderSession() {
     sessionRail.style.display = "block";
     sessionFill.style.width = `${pct}%`;
   }
+
+  // Session sets list
+  const sessionSetsList = document.querySelector("#session-sets-list");
+  if (sessionSetsList) {
+    sessionSetsList.innerHTML = "";
+    if (state.active && currentActive && currentActive.setsDetail && currentActive.setsDetail.length > 0) {
+      currentActive.setsDetail.forEach((s, si) => {
+        const row = document.createElement("li");
+        row.className = "session-set-row";
+        row.dataset.setIndex = si;
+        row.dataset.exerciseId = currentActive.id;
+
+        const labelEl = document.createElement("span");
+        labelEl.className = "session-set-label";
+        labelEl.textContent = `${si + 1}세트`;
+
+        const valueEl = document.createElement("span");
+        valueEl.className = "session-set-value";
+        valueEl.textContent = formatSetDetail(s);
+
+        row.appendChild(labelEl);
+        row.appendChild(valueEl);
+        sessionSetsList.appendChild(row);
+      });
+    }
+  }
 }
 
-function renderExerciseDescription(description) {
+function renderExerciseDescription(description, exerciseName) {
   exerciseDescriptionEl.textContent =
     typeof description === "string" && description.trim()
       ? description.trim()
       : "운동을 선택하면 설명이 표시됩니다.";
+  const gifEl = document.querySelector("#exercise-gif");
+  if (gifEl && exerciseName) {
+    gifEl.src = getExerciseGifUrl(exerciseName);
+    gifEl.classList.remove("hidden");
+    gifEl.onerror = () => gifEl.classList.add("hidden");
+  } else if (gifEl) {
+    gifEl.classList.add("hidden");
+  }
 }
 
 function renderHistory() {
