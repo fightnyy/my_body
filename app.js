@@ -57,10 +57,16 @@ const DEFAULT_UPPER_ROUTINE_TEMPLATE = [
     description: "어깨를 으쓱하지 않고 팔을 바깥으로 벌려 후면 삼각근을 집중 자극합니다.",
   },
   {
-    name: "케이블 컬 + 케이블 푸쉬다운",
+    name: "케이블 컬",
     targetSets: 4,
     exerciseType: "weight",
-    description: "컬과 푸쉬다운을 연속 수행하는 슈퍼세트로 팔 전면/후면을 함께 훈련합니다.",
+    description: "팔꿈치를 고정한 채 케이블을 당겨 이두근을 집중 수축합니다.",
+  },
+  {
+    name: "케이블 푸쉬다운",
+    targetSets: 4,
+    exerciseType: "weight",
+    description: "팔꿈치를 몸에 붙이고 케이블을 아래로 밀어 삼두근을 수축합니다.",
   },
 ];
 
