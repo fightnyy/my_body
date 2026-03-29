@@ -1,4 +1,4 @@
-const CACHE_NAME = "xerxise-v2";
+const CACHE_NAME = "xerxise-v3";
 const ASSETS = [
   "/",
   "/index.html",
