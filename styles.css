@@ -555,6 +555,11 @@ button:disabled {
   display: flex;
   gap: 0.4rem;
   align-items: center;
+  flex-wrap: nowrap;
+}
+
+.set-action-wrap button {
+  white-space: nowrap;
 }
 
 .weight-input,
