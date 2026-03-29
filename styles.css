@@ -2200,6 +2200,96 @@ body.session-active .session-live-badge {
   cursor: pointer;
 }
 
+/* ── Session sets list (dark theme) ── */
+.session-sets-list {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.session-set-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.session-set-row:last-child {
+  border-bottom: none;
+}
+
+.session-set-row:hover,
+.session-set-row:active {
+  background: rgba(255,255,255,0.08);
+}
+
+.session-set-label {
+  font-size: var(--text-md);
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+}
+
+.session-set-value {
+  font-size: var(--text-md);
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+}
+
+.session-set-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 0.25rem 0;
+}
+
+.session-set-edit .set-edit-weight,
+.session-set-edit .set-edit-reps,
+.session-set-edit .set-edit-time {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.5);
+}
+
+.session-set-edit .set-edit-unit {
+  color: rgba(255,255,255,0.6);
+}
+
+.session-set-save-btn {
+  padding: 0.28rem 0.6rem;
+  font-size: var(--text-xs);
+  font-family: var(--font-body);
+  font-weight: 600;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.session-set-delete-btn {
+  padding: 0.28rem 0.6rem;
+  font-size: var(--text-xs);
+  font-family: var(--font-body);
+  font-weight: 600;
+  background: transparent;
+  color: #ff6b6b;
+  border: 1.5px solid #ff6b6b;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 .set-ring {
   width: 42px;
   height: 42px;
