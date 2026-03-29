@@ -1379,6 +1379,91 @@ exerciseList.addEventListener("click", (event) => {
     return;
   }
 
+  // Set detail row inline edit handling
+  if (target.classList.contains("set-detail-save-btn") || target.closest(".set-detail-save-btn")) {
+    const btn = target.classList.contains("set-detail-save-btn") ? target : target.closest(".set-detail-save-btn");
+    const row = btn.closest(".set-detail-row");
+    if (!row || !state.active) return;
+    const exId = row.dataset.exerciseId;
+    const si = parseInt(row.dataset.setIndex, 10);
+    const exercise = state.routine.find((e) => e.id === exId);
+    if (!exercise || !exercise.setsDetail[si]) return;
+    const s = exercise.setsDetail[si];
+    if (exercise.exerciseType === "time") {
+      const timeVal = parseInt(row.querySelector(".set-edit-time")?.value || "0", 10);
+      if (timeVal > 0) s.time = timeVal;
+    } else {
+      const weightVal = row.querySelector(".set-edit-weight")?.value?.trim();
+      const repsVal = parseInt(row.querySelector(".set-edit-reps")?.value || "0", 10);
+      s.weight = weightVal ? parseFloat(weightVal) : 0;
+      s.reps = repsVal || 0;
+    }
+    saveRoutine(state.routine);
+    updateActiveSessionHistory();
+    renderRoutine();
+    renderSession();
+    return;
+  }
+
+  if (target.classList.contains("set-detail-delete-btn") || target.closest(".set-detail-delete-btn")) {
+    const btn = target.classList.contains("set-detail-delete-btn") ? target : target.closest(".set-detail-delete-btn");
+    const row = btn.closest(".set-detail-row");
+    if (!row || !state.active) return;
+    const exId = row.dataset.exerciseId;
+    const si = parseInt(row.dataset.setIndex, 10);
+    const exercise = state.routine.find((e) => e.id === exId);
+    if (!exercise) return;
+    if (!window.confirm(`${si + 1}세트 기록을 삭제할까요?`)) return;
+    exercise.setsDetail.splice(si, 1);
+    exercise.completedSets = Math.max(0, exercise.completedSets - 1);
+    saveRoutine(state.routine);
+    updateActiveSessionHistory();
+    renderRoutine();
+    renderSession();
+    return;
+  }
+
+  const setRow = target.closest(".set-detail-row");
+  if (setRow instanceof HTMLElement) {
+    if (!state.active) return;
+    // Close any other open edit rows first
+    document.querySelectorAll(".set-detail-row.editing").forEach((r) => {
+      if (r !== setRow) r.classList.remove("editing");
+    });
+    setRow.classList.toggle("editing");
+    if (setRow.classList.contains("editing")) {
+      const exId = setRow.dataset.exerciseId;
+      const si = parseInt(setRow.dataset.setIndex, 10);
+      const exercise = state.routine.find((e) => e.id === exId);
+      if (!exercise || !exercise.setsDetail[si]) return;
+      const s = exercise.setsDetail[si];
+      const exType = exercise.exerciseType || "weight";
+      // Build edit fields inside the row
+      let editHTML = `<div class="set-detail-edit">`;
+      if (exType === "time") {
+        editHTML += `<input class="set-edit-time" type="number" inputmode="numeric" min="1" value="${s.time || ""}" placeholder="초">`;
+        editHTML += `<span class="set-edit-unit">초</span>`;
+      } else {
+        if (exType === "weight") {
+          editHTML += `<input class="set-edit-weight" type="number" inputmode="decimal" min="0" step="0.5" value="${s.weight || ""}" placeholder="kg">`;
+          editHTML += `<span class="set-edit-unit">kg ×</span>`;
+        }
+        editHTML += `<input class="set-edit-reps" type="number" inputmode="numeric" min="0" value="${s.reps || ""}" placeholder="회">`;
+        editHTML += `<span class="set-edit-unit">회</span>`;
+      }
+      editHTML += `<button class="set-detail-save-btn" type="button">저장</button>`;
+      editHTML += `<button class="set-detail-delete-btn" type="button">삭제</button>`;
+      editHTML += `</div>`;
+      // Remove existing edit container if any
+      setRow.querySelector(".set-detail-edit")?.remove();
+      setRow.insertAdjacentHTML("beforeend", editHTML);
+      setRow.querySelector(".set-edit-weight, .set-edit-time, .set-edit-reps")?.focus();
+    } else {
+      setRow.querySelector(".set-detail-edit")?.remove();
+    }
+    return;
+  }
+
   const item = target.closest(".exercise-item");
   if (!(item instanceof HTMLElement)) {
     return;
@@ -2058,11 +2143,31 @@ function renderRoutine() {
     const typeLabel = exType === "weight" ? "웨이트" : exType === "bodyweight" ? "맨몸" : "시간";
     const restSec = exercise.restSeconds || 60;
     const restLabel = restSec >= 60 && restSec % 60 === 0 ? `${restSec / 60}분` : `${restSec}초`;
-    const setsInfo = exercise.setsDetail && exercise.setsDetail.length > 0
-      ? ` (${exercise.setsDetail.map(formatSetDetail).join(", ")})`
-      : "";
     item.querySelector(".meta").textContent =
-      `${exercise.targetSets}세트 · ${typeLabel} · 휴식 ${restLabel}${setsInfo}`;
+      `${exercise.targetSets}세트 · ${typeLabel} · 휴식 ${restLabel}`;
+
+    // Sets detail list below meta
+    const setsListEl = item.querySelector(".sets-detail-list");
+    if (setsListEl && exercise.setsDetail && exercise.setsDetail.length > 0) {
+      exercise.setsDetail.forEach((s, si) => {
+        const row = document.createElement("li");
+        row.className = "set-detail-row";
+        row.dataset.setIndex = si;
+        row.dataset.exerciseId = exercise.id;
+
+        const labelEl = document.createElement("span");
+        labelEl.className = "set-detail-label";
+        labelEl.textContent = `${si + 1}세트`;
+
+        const valueEl = document.createElement("span");
+        valueEl.className = "set-detail-value";
+        valueEl.textContent = formatSetDetail(s);
+
+        row.appendChild(labelEl);
+        row.appendChild(valueEl);
+        setsListEl.appendChild(row);
+      });
+    }
 
     // Set ring: conic-gradient progress
     const pct = exercise.targetSets > 0

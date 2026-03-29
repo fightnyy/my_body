@@ -2078,6 +2078,109 @@ body.session-active .session-live-badge {
   font-size: 0.82rem;
 }
 
+.sets-detail-list {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.set-detail-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-height: 36px;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.set-detail-row:last-child {
+  border-bottom: none;
+}
+
+.set-detail-row:hover {
+  background: rgba(0, 86, 214, 0.04);
+}
+
+.set-detail-label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  min-width: 2.6rem;
+  font-weight: 600;
+}
+
+.set-detail-value {
+  font-size: var(--text-xs);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.set-detail-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 0.25rem 0;
+}
+
+.set-edit-weight,
+.set-edit-reps,
+.set-edit-time {
+  width: 54px;
+  padding: 0.28rem 0.35rem;
+  font-size: var(--text-xs);
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-align: center;
+  border: 1.5px solid var(--brand);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  -moz-appearance: textfield;
+}
+
+.set-edit-weight::-webkit-inner-spin-button,
+.set-edit-reps::-webkit-inner-spin-button,
+.set-edit-time::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.set-edit-unit {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.set-detail-save-btn {
+  padding: 0.28rem 0.6rem;
+  font-size: var(--text-xs);
+  font-family: var(--font-body);
+  font-weight: 600;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.set-detail-delete-btn {
+  padding: 0.28rem 0.6rem;
+  font-size: var(--text-xs);
+  font-family: var(--font-body);
+  font-weight: 600;
+  background: transparent;
+  color: var(--danger);
+  border: 1.5px solid var(--danger);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 .set-ring {
   width: 42px;
   height: 42px;
