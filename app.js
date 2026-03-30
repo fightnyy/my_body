@@ -1755,6 +1755,7 @@ setActionBtn.addEventListener("click", () => {
     state.waitingForStart = false;
     setActionBtn.textContent = "세트 완료";
     sessionStatus.textContent = `${exercise.name} ${exercise.completedSets + 1}세트 진행 중`;
+    sessionStatus.classList.remove("alert");
     countdownEl.textContent = "세트 진행 중";
     const exType = exercise.exerciseType || "weight";
     const lastData = getLastSessionData(exercise.name);
@@ -1786,23 +1787,13 @@ setActionBtn.addEventListener("click", () => {
         timeInput.focus();
       }
     }
-    // 메모 입력 표시 (이전 메모가 있으면 힌트로 표시)
-    if (setNoteInput) {
-      setNoteInput.classList.remove("hidden");
-      setNoteInput.value = "";
-      if (lastData && lastData.note) {
-        setNoteInput.placeholder = `이전: ${lastData.note}`;
-      } else {
-        setNoteInput.placeholder = "메모 (선택)";
-      }
-    }
     return;
   }
 
   const repsVal = repsInput ? Number(repsInput.value) : 0;
   const weightVal = weightInput ? Number(weightInput.value) : 0;
   const timeVal = timeInput ? Number(timeInput.value) : 0;
-  const noteVal = setNoteInput ? setNoteInput.value.trim() : "";
+  const noteVal = "";
   if (!exercise.setsDetail) exercise.setsDetail = [];
   const setEntry = {
     reps: Number.isFinite(repsVal) && repsVal > 0 ? repsVal : 0,
@@ -1821,7 +1812,6 @@ setActionBtn.addEventListener("click", () => {
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
-  if (setNoteInput) { setNoteInput.value = ""; setNoteInput.classList.add("hidden"); setNoteInput.placeholder = "메모 (선택)"; }
 
   exercise.completedSets += 1;
   saveRoutine(state.routine);
@@ -1952,6 +1942,7 @@ function startReminderTimer() {
     triggerAlarm();
     sendBackgroundNotification("세트 시작 시간!", "휴식 시간이 끝났습니다. 다음 세트를 시작하세요.");
     sessionStatus.textContent = "세트 시작 대기 시간이 지났습니다. 지금 시작하세요.";
+    sessionStatus.classList.add("alert");
     countdownEl.textContent = "알림 발생";
   }, 1000);
 }
@@ -2021,7 +2012,6 @@ function finishSession({ manual }) {
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
-  if (setNoteInput) { setNoteInput.value = ""; setNoteInput.classList.add("hidden"); }
 
   renderRoutine();
   renderSession();
@@ -2056,7 +2046,6 @@ function resetSession({ message = "" } = {}) {
   if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
   if (repsInput) { repsInput.value = ""; repsInput.classList.add("hidden"); }
   if (timeInput) { timeInput.value = ""; timeInput.classList.add("hidden"); }
-  if (setNoteInput) { setNoteInput.value = ""; setNoteInput.classList.add("hidden"); }
   switchTab("workout");
 
   if (!state.previewExerciseId) {
@@ -3550,18 +3539,14 @@ let swRegistration = null;
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").then((reg) => {
     swRegistration = reg;
-    console.log("[SW] registered", reg.scope);
-  }).catch((err) => console.warn("[SW] registration failed", err));
+  }).catch(() => {});
 }
 
 function requestNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
-    Notification.requestPermission().then((perm) => {
-      console.log("[Notification] permission:", perm);
+    Notification.requestPermission().then(() => {
       updateNotificationBanner();
     });
-  } else if (!("Notification" in window)) {
-    console.warn("[Notification] not supported in this browser/context");
   }
 }
 
