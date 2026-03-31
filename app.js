@@ -3303,7 +3303,7 @@ async function hydrateFromCloudForCurrentUser() {
     }
 
     const cloudRoutineRaw = routineDoc?.data()?.items;
-    if (Array.isArray(cloudRoutineRaw)) {
+    if (Array.isArray(cloudRoutineRaw) && !state.active) {
       const cloudRoutine = normalizeRoutineArray(cloudRoutineRaw);
       if (cloudRoutine.length > 0) {
         state.routine = cloudRoutine;
