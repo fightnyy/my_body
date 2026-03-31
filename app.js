@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   legacyHistoryV1: "xerxise-history-v1",
   legacyRoutine: "set-pilot-routine-v1",
   wizardHidden: "xerxise-wizard-hidden-v1",
+  sessionState: "xerxise-session-state-v1",
 };
 
 const ALERT_SECONDS = 60;
@@ -1542,6 +1543,7 @@ exerciseList.addEventListener("click", (event) => {
     const clickedIdx = state.routine.findIndex((ex) => ex.id === selectedId);
     if (clickedIdx !== -1 && clickedIdx !== state.currentExerciseIdx) {
       state.currentExerciseIdx = clickedIdx;
+      saveSessionState();
       clearReminderTimer();
       resetInactivityTimer();
       if (weightInput) { weightInput.value = ""; weightInput.classList.add("hidden"); }
@@ -1733,6 +1735,7 @@ startSessionBtn.addEventListener("click", () => {
   saveHistory(state.history);
 
   saveRoutine(state.routine);
+  saveSessionState();
   armNextSet();
   resetInactivityTimer();
   renderRoutine();
@@ -1846,6 +1849,7 @@ setActionBtn.addEventListener("click", () => {
     state.currentExerciseIdx = nextIdx;
   }
 
+  saveSessionState();
   armNextSet();
   renderRoutine();
   renderSession();
@@ -2038,6 +2042,7 @@ function finishSession({ manual }) {
 function resetSession({ message = "" } = {}) {
   clearReminderTimer();
   clearInactivityTimer();
+  clearSessionState();
   state.active = false;
   state.waitingForStart = false;
   state.currentExerciseIdx = 0;
@@ -2963,6 +2968,13 @@ function loadDataForCurrentUser() {
   renderUserPresets();
   renderCalendarScope();
 
+  // 진행 중이던 세션 복원
+  const restored = restoreSessionState();
+  if (restored) {
+    renderRoutine();
+    renderSession();
+  }
+
   if (state.user && state.firestoreReady) {
     hydrateFromCloudForCurrentUser();
   }
@@ -3384,6 +3396,41 @@ function saveRoutine(routine) {
       description: item.description,
     })),
   );
+}
+
+function saveSessionState() {
+  const data = {
+    active: state.active,
+    currentExerciseIdx: state.currentExerciseIdx,
+    sessionStartedAtMs: state.sessionStartedAtMs,
+    activeSessionId: state.activeSessionId,
+  };
+  localStorage.setItem(STORAGE_KEYS.sessionState, JSON.stringify(data));
+}
+
+function clearSessionState() {
+  localStorage.removeItem(STORAGE_KEYS.sessionState);
+}
+
+function restoreSessionState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.sessionState);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data.active) { clearSessionState(); return false; }
+    state.active = true;
+    state.currentExerciseIdx = data.currentExerciseIdx || 0;
+    state.sessionStartedAtMs = data.sessionStartedAtMs || 0;
+    state.activeSessionId = data.activeSessionId || "";
+    document.body.classList.add("session-active");
+    switchTab("workout");
+    armNextSet();
+    resetInactivityTimer();
+    return true;
+  } catch {
+    clearSessionState();
+    return false;
+  }
 }
 
 function createRoutineFromTemplate(template) {
