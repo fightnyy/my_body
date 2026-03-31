@@ -3291,10 +3291,11 @@ async function hydrateFromCloudForCurrentUser() {
   state.hydrationUserScope = userId;
 
   try {
-    const [routineDoc, historyDoc, presetDoc] = await Promise.all([
+    const [routineDoc, historyDoc, presetDoc, sessionDoc] = await Promise.all([
       getCloudDocRef("routine", userId)?.get(),
       getCloudDocRef("history", userId)?.get(),
       getCloudDocRef("presets", userId)?.get(),
+      getCloudDocRef("sessionState", userId)?.get(),
     ]);
 
     if ((state.user?.uid || "") !== userId || state.hydrationUserScope !== userId) {
@@ -3322,6 +3323,13 @@ async function hydrateFromCloudForCurrentUser() {
       const cloudPresets = normalizePresetArray(cloudPresetRaw);
       state.presets = cloudPresets;
       localStorage.setItem(getPresetStorageKey(), JSON.stringify(cloudPresets));
+    }
+
+    // 클라우드에서 세션 상태 복원
+    const cloudSession = sessionDoc?.data()?.items;
+    if (cloudSession && cloudSession.active && !state.active) {
+      localStorage.setItem(STORAGE_KEYS.sessionState, JSON.stringify(cloudSession));
+      applySessionState(cloudSession);
     }
 
     if (state.routine.length > 0) {
@@ -3406,10 +3414,25 @@ function saveSessionState() {
     activeSessionId: state.activeSessionId,
   };
   localStorage.setItem(STORAGE_KEYS.sessionState, JSON.stringify(data));
+  queueCloudSync("sessionState", data);
 }
 
 function clearSessionState() {
   localStorage.removeItem(STORAGE_KEYS.sessionState);
+  queueCloudSync("sessionState", { active: false });
+}
+
+function applySessionState(data) {
+  if (!data || !data.active) return false;
+  state.active = true;
+  state.currentExerciseIdx = data.currentExerciseIdx || 0;
+  state.sessionStartedAtMs = data.sessionStartedAtMs || 0;
+  state.activeSessionId = data.activeSessionId || "";
+  document.body.classList.add("session-active");
+  switchTab("workout");
+  armNextSet();
+  resetInactivityTimer();
+  return true;
 }
 
 function restoreSessionState() {
@@ -3418,15 +3441,7 @@ function restoreSessionState() {
     if (!raw) return false;
     const data = JSON.parse(raw);
     if (!data.active) { clearSessionState(); return false; }
-    state.active = true;
-    state.currentExerciseIdx = data.currentExerciseIdx || 0;
-    state.sessionStartedAtMs = data.sessionStartedAtMs || 0;
-    state.activeSessionId = data.activeSessionId || "";
-    document.body.classList.add("session-active");
-    switchTab("workout");
-    armNextSet();
-    resetInactivityTimer();
-    return true;
+    return applySessionState(data);
   } catch {
     clearSessionState();
     return false;
