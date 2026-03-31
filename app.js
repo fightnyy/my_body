@@ -1488,6 +1488,7 @@ exerciseList.addEventListener("click", (event) => {
   const setRow = target.closest(".set-detail-row");
   if (setRow instanceof HTMLElement) {
     if (!state.active) return;
+    if (target.closest(".set-detail-edit")) return;
     // Close any other open edit rows first
     document.querySelectorAll(".set-detail-row.editing").forEach((r) => {
       if (r !== setRow) r.classList.remove("editing");
@@ -1610,6 +1611,7 @@ document.querySelector(".card.session").addEventListener("click", (e) => {
   const sessionRow = target.closest(".session-set-row");
   if (sessionRow instanceof HTMLElement) {
     if (!state.active) return;
+    if (target.closest(".session-set-edit")) return;
     // Close any other open edit rows first
     document.querySelectorAll(".session-set-row.editing").forEach((r) => {
       if (r !== sessionRow) {
